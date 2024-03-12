@@ -1,8 +1,10 @@
 <?php
+if (session_status() === PHP_SESSION_NONE){
 session_start();
+}
 
 $dbname = 'Onlyfans';
-$hostname = 'localhost';
+$hostname = '127.0.0.1';
 $DB_USER = 'root';
 $DB_PASSWORD = '';
 

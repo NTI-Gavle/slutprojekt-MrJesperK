@@ -52,10 +52,13 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['emai
     <div class="container m-auto mt-5 border border-black rounded p-3" style="height=:fit-content; width:30rem;">
         
         <form action="" method="POST">
+        <?php if (isset($error)): ?>
+        <p><?php echo $error; ?></p>
+    <?php endif; ?>
         <div class="d-flex text-center flex-column gap-4">
             <input type="text" name="username" id="username" placeholder="Username">
             <input type="email" name="email" id="email" placeholder="example@gmail.com">
-            <input type="text" name="password" id="password" placeholder="Password">
+            <input type="password" name="password" id="password" placeholder="Password">
             <hr>
             <button type="submit" class="btn btn-primary" name="register">Register</button>
             </div>

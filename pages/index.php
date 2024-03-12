@@ -1,9 +1,10 @@
 <?php
+session_start();
 require '../db_shenanigans/dbconn.php';
 
 
 
-$sql = "SELECT ID, title FROM posts ORDER BY ID DESC";
+$sql = "SELECT ID, title, image, created_by FROM posts ORDER BY ID DESC";
 
 $stmt = $dbconn->prepare($sql);
 
@@ -11,18 +12,70 @@ $stmt->execute();
 
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST'){
+if ($_SERVER['REQUEST_METHOD'] === 'POST'){
+
+    if (isset($_POST['username']) && isset($_POST['password'])){
+
+
+      $username = $_POST['username'];
+      $password = $_POST['password'];
+
+      try{
+             $stmt = $dbconn->prepare("SELECT * FROM users WHERE username = :username");
+            $stmt->bindParam(':username', $username);
+            $stmt->execute();
+           $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+           if ($user){
+            if (password_verify($password, $user['pass'])){
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['user_id'] = $user['ID'];
+                $_SESSION['admin'] = $user['admin'];
+
+              
+               // exit();
+            } else {
+                $error = 'invalid username or password';
+             }
+           } else {
+            $error = 'invalid username or password';
+           }
+    } catch (PDOException $e) {
+      echo 'Connection failed: '.$e->getMessage()."<br />";
+    }
+  }
+
+    if (isset($_POST['logout'])){
+       session_destroy();
+       header('Location: index.php');
+       exit();
+    }
+
     if (isset($_POST['title']) && isset($_POST['description'])){
 
-        $title = $_POST['title'];
-        $descr = $_POST['description'];
+      $title = $_POST['title'];
+      $descr = $_POST['description'];
+      $category = $_POST['category'];
+      $user = $_SESSION['username'];
+      $name = $_FILES['image']['name'];
+   $type = $_FILES['image']['type'];
+   $data = file_get_contents($_FILES['image']['tmp_name']);
 
-            $stmt2 = $dbconn->prepare("INSERT INTO posts (title, decription) VALUES (:title, :descr)");
-            $stmt2->bindParam(":title", $title);
-            $stmt2->bindParam(":descr", $descr);
-            $stmt2->execute();
+          $stmt2 = $dbconn->prepare("INSERT INTO posts (title, description, created_by, image_name, image_type, image, created_at, category) VALUES (:title, :descr, :user, :name, :type, :data, now(), :category)");
+          $stmt2->bindParam(':title', $title);
+          $stmt2->bindParam(':descr', $descr);
+          $stmt2->bindParam(':user', $user);
+          $stmt2->bindParam(':name', $name);
+          $stmt2->bindParam(':type', $type);
+          $stmt2->bindParam(':data', $data);
+          $stmt2->bindParam(':category', $category);
 
-    }
+
+          $stmt2->execute();
+
+          header('Location: index.php');
+
+  }
 }
 
 ?>
@@ -55,9 +108,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
             Categories
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="index.php?category=All"><b>all Fans</b></a></li>
+            <li><a class="dropdown-item" href="#"><b>all Fans</b></a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="index.php?category=Tower">Tower Fans</a></li>
+            <li><a class="dropdown-item" href="#">Tower Fans</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="#">Table Fans</a></li>
             <li><hr class="dropdown-divider"></li>
@@ -68,14 +121,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
         </li>
 
         <li class="nav-item">
-            <button class="nav-link btn" data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>
+          <?php if (!isset($_SESSION['username'])){
+            echo "<button class='nav-link btn' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
+          } 
+          else {
+            echo "<form method='post' name='logoutForm'><input type='submit' class='btn' name='logout' value='logout'></input></form>";
+          }
+          ?>
+        </li>
+        <li class="nav-item">
+          <?php
+        if (isset($_SESSION['username'])){
+              echo "<a href='account.php' class='btn'>Account</a>";
+            }
+            ?>
+        </li>
+        <li class="nav-item">
+        <?php 
+        
+            echo "<button type='button' class='btn' data-bs-toggle='modal' data-bs-target='#PostModal' onclick='modal1()'>
+            New Post
+          </button>";
+        
+        ?>
         </li>
         <li class="nav-item">
         <?php 
   
-            echo "<button type='button' class='btn' data-bs-toggle='modal' data-bs-target='#PostModal' onclick='modal1()'>
-            New Post
-          </button>";
+          
         
         ?>
         </li>
@@ -96,23 +169,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
         <h1 class="modal-title fs-5" id="ModalLabel">Create Post</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form action="#" method="post">
+      <form action="" method="post" enctype="multipart/form-data">
       <div class="modal-body d-flex flex-column mb-3 gap-3">
-        <input type="file" name="image" id="image">
-        <input type="text" name="title" id="title" placeholder="--Title--">
-        <textarea name="descriptiom" id="description" cols="30" rows="4" placeholder="description"></textarea>
-        <select name="category" id="category">
-            <option value="1">--Choose Category--</option>
-            <option value="2">Tower fan</option>
-            <option value="3">Table fan</option>
-            <option value="4">Ceiling fan</option>
-            <option value="5">Handheld fan</option>
+        <input type="file" name="image" id="image" required>
+        <input type="text" name="title" id="title" placeholder="--Title--" maxlength="20" required>
+        <textarea name="description" id="description" cols="30" rows="4" placeholder="--description--" maxlength="200" required></textarea>
+        <select name="category" id="category" required>
+            <option value="None">--Choose Category--</option>
+            <option value="Tower">Tower fan</option>
+            <option value="Table">Table fan</option>
+            <option value="Ceiling">Ceiling fan</option>
+            <option value="Handheld">Handheld fan</option>
         </select>
       </div>
       <div class="modal-footer">
         <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary">Post</button>
+        <input type="submit" class="btn btn-primary" value="Post" name="Post" id="Post"></input>
       </div>
       </form>
     </div>
@@ -125,8 +198,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="ModalLabel">Login</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form action="#" method="post" class="">
+      </div>    
+      <form  method="POST" action="index.php">
+      <?php if (isset($error)): ?>
+        <p><?php echo $error; ?></p>
+    <?php endif; ?>
       <div class="modal-body d-flex flex-column mb-3 gap-3">
         <input type="text" name="username" id="username" placeholder="--Username--">
         <input type="text" name="password" id="password" placeholder="--Password--">
@@ -137,24 +213,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
       <div class="modal-footer">
         <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary" name="Login">Login</button>
+        <input type="submit" class="btn btn-primary" name="Login" value="Login" id="thing" onclick="loginFormStuff()"></input>
       </div>
       </form>
     </div>
   </div>
 </div>
 
-
 <div class="container text-center p-0">
-<div class="row row-cols-6 gap-5 m-auto justify-content-center" style="width:fit-content;">
+<div class="row row-cols-6 gap-5 m-auto justify-content-center position-relative" style="top:3rem;">
 
     <?php foreach($posts as $post): ?>
-    <a style="height:13rem; width:fit-content;" class='col border p-0 text-decoration-none text-black position-relative hoverEffect' href="post.php?id=<?php echo $post['ID']; ?>">
-    <img src='../image/nedladdning.png' alt='img' style="height:9.5rem; width:9.5rem;"></img>
-    <hr class='mt-0'>
-    <h5><?php echo $post['title']; ?></h5>
+      
+    <a style="height:20rem;"class='col border p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0' href="post.php?id=<?php echo $post['ID']; ?>" >
+    <?php 
+    if (isset($post['image'])){
+    echo '<img class="object-fit-cover" style="height:14rem;" src="data:image/jpeg;base64,'.base64_encode($post['image']).'" />';
+    }
+    else {
+      echo "<img src='../image/nedladdning.png' class='object-fit-cover' />";
+    }
+    ?>
+    <hr class='mt-0 z-1'>
+    <p class="z-1 bg-body-white text-break position-relative mb-0 p-2 text-start" style="bottom:1rem;"><?php echo $post['title']; ?></p>
+    <p class="z-1 bg-body-white text-body-secondary position-relative text-end p-2"><?php echo "Posted by: " . $post['created_by']; ?></p>
     </a>
-    
+
     <?php endforeach; ?>
     
 </div>
