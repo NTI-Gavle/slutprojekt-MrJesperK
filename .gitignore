@@ -1,0 +1,17 @@
+# Ignore generated files
+/cache/*
+/logs/*
+.env
+
+# Exclude vendor binaries
+/vendor/bin/
+
+# Exclude Composer files
+/vendor/autoload.php
+/vendor/composer/autoload_*.php
+/vendor/composer/installed.json
+
+# Exclude Composer packages
+/vendor/*/*/*
+!vendor/bin/
+!vendor/composer/

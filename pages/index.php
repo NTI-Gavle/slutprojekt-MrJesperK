@@ -1,7 +1,7 @@
 <?php
 session_start();
 require '../db_shenanigans/dbconn.php';
-
+require '../db_shenanigans/thing.php';
 
 
 $sql = "SELECT ID, title, image, created_by FROM posts ORDER BY ID DESC";
