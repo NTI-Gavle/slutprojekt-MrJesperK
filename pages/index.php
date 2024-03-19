@@ -45,11 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
   }
 
-    if (isset($_POST['logout'])){
-       session_destroy();
-       header('Location: index.php');
-       exit();
-    }
+   
 
     if (isset($_POST['title']) && isset($_POST['description'])){
 
@@ -77,7 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
   }
 }
-
+$post_id = $dbconn->prepare("SELECT ID FROM posts");
+$post_id->execute();
+$post_idRes = $post_id->fetch(PDO::FETCH_ASSOC);
+$postId = $post_idRes['ID'];
 ?>
 
 <!DOCTYPE html>
@@ -122,26 +121,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
         <li class="nav-item">
           <?php if (!isset($_SESSION['username'])){
-            echo "<button class='nav-link btn' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
+            echo "<button class='nav-link btn' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
           } 
           else {
-            echo "<form method='post' name='logoutForm'><input type='submit' class='btn' name='logout' value='logout'></input></form>";
+            echo "";
           }
           ?>
         </li>
         <li class="nav-item">
           <?php
         if (isset($_SESSION['username'])){
-              echo "<a href='account.php' class='btn'>Account</a>";
-            }
+          if ($_SESSION['admin'] === 'Y')
+              echo "<a href='admin.php' class='btn btn-warning'>Admin</a>";
+            }    
+            ?>
+        </li>
+        <li class="nav-item">
+        <?php
+        if (isset($_SESSION['username'])){
+              echo "<a href='account.php?user=".$_SESSION['username']."'class='btn'>Account</a>";
+        }
             ?>
         </li>
         <li class="nav-item">
         <?php 
-        
-            echo "<button type='button' class='btn' data-bs-toggle='modal' data-bs-target='#PostModal' onclick='modal1()'>
+        if (isset($_SESSION['username'])){
+            echo "<button type='button' class='btn' id='modalInput1' data-bs-toggle='modal' data-bs-target='#PostModal' onclick='modal1()'>
             New Post
           </button>";
+        }
         
         ?>
         </li>
@@ -205,7 +213,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     <?php endif; ?>
       <div class="modal-body d-flex flex-column mb-3 gap-3">
         <input type="text" name="username" id="username" placeholder="--Username--">
-        <input type="text" name="password" id="password" placeholder="--Password--">
+        <input type="password" name="password" id="password" placeholder="--Password--">
+        <input class="float-start" type="checkbox" onclick="Shenanigans()">
         <a href="register.php">No account?</a>
         <a href="#">Forgot password?</a>
 
@@ -224,8 +233,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 <div class="row row-cols-6 gap-5 m-auto justify-content-center position-relative" style="top:3rem;">
 
     <?php foreach($posts as $post): ?>
-      
-    <a style="height:20rem;"class='col border p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0' href="post.php?id=<?php echo $post['ID']; ?>" >
+
+    <?php
+    $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
+    $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
+    $likeCountStmt->execute();
+    $likeCount = $likeCountStmt->fetch(PDO::FETCH_ASSOC);
+
+    $saveCountStmt = $dbconn->prepare("SELECT COUNT(*) AS save_count FROM saves WHERE post_id = :postId");
+    $saveCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
+    $saveCountStmt->execute();
+    $saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
+    ?>
+    <a style="height:fit-content;"class='col border p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0' href="post.php?id=<?php echo $post['ID']; ?>" >
     <?php 
     if (isset($post['image'])){
     echo '<img class="object-fit-cover" style="height:14rem;" src="data:image/jpeg;base64,'.base64_encode($post['image']).'" />';
@@ -235,10 +255,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     }
     ?>
     <hr class='mt-0 z-1'>
-    <p class="z-1 bg-body-white text-break position-relative mb-0 p-2 text-start" style="bottom:1rem;"><?php echo $post['title']; ?></p>
-    <p class="z-1 bg-body-white text-body-secondary position-relative text-end p-2"><?php echo "Posted by: " . $post['created_by']; ?></p>
+    <p class="z-1 bg-body-white text-break position-relative mb-0 p-2 text-start fw-medium" style="bottom:1rem;"><?php echo $post['title']; ?></p>
+    <div class="container d-flex flex-row gap-5 justify-content-center ms-0 mt-2" style="width:fit-content; height:fit-content;">
+    <p class="position-relative mb-0" style="width: fit-content; left: 1rem; height: fit-content; bottom:1rem;">Likes: <?php echo $likeCount['like_count'] ?></p>
+    <p class="position-relative mb-0" style="width: fit-content; left: 1rem; height: fit-content; bottom:1rem;">Saves: <?php echo $saveCount['save_count'] ?></p>
+    </div>
+    <p class="z-1 bg-body-white text-body-secondary position-relative text-center p-2 mb-0" style="bottom: 0rem;"><?php echo "Posted by: " . $post['created_by']; ?></p>
     </a>
-
+  
     <?php endforeach; ?>
     
 </div>
