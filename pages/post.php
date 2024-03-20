@@ -187,11 +187,11 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="container d-flex justify-content-center text-center p-0 z-0" style="width:40rem; height:40rem;">
     <div class="row m-auto justify-content-center z-0">
 <?php
-
+$image = $post_data['image'];
 echo "<h1 class='text-start'>".$post_data['title']."</h1>";
 echo "<p class='text-start text-body-secondary fs-5 mb-0'>Posted by: ". $post_data['created_by']."</p>";
 echo "<p class='text-start text-body-secondary fs-6'>". $post_data['created_at']."</p>";
-echo '<img style="height:40rem; width:40rem;" src="data:image/jpeg;base64,'.base64_encode($post_data['image']).'" />';
+echo "<img style='height:40rem; width:40rem;' class='border shadow object-fit-scale' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
 if (isset($_SESSION['username'])){
     if ($_SESSION['admin'] === 'Y'){
         echo "<button class='btn btn-danger position-relative' id='modalInput4' data-bs-toggle='modal' data-bs-target='#deleteModal' onclick='deleteModal()' style='top:1rem;'>Delete</button>";
@@ -234,7 +234,7 @@ echo "<button class='btn btn-primary mt-4 z-3' id='modalInput3' data-bs-target='
       </div>
       <form action="" method="post">
       <div class="modal-body d-flex flex-column mb-3 gap-3">
-        <textarea name="commentText" id="commentText" cols="20" rows="10" placeholder="Comment"></textarea>
+        <textarea name="commentText" id="commentText" cols="20" rows="10" placeholder="Comment" maxlength="200"></textarea>
       </div>
       <div class="modal-footer">
         <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
@@ -278,7 +278,7 @@ echo "<button class='btn btn-primary mt-4 z-3' id='modalInput3' data-bs-target='
         <?php foreach ($Comments as $Comment): ?>
             <hr>
             <p class="text-start fs-6 text-body-secondary ms-3 mb-0 mt-3"><?php echo $Comment['created_by']; ?></p>
-        <p class="fs-5 mb-5 ms-2"><?php echo $Comment['CommentText']; ?></p>
+        <p class="fs-5 mb-5 ms-2 text-break"><?php echo $Comment['CommentText']; ?></p>
         <form method="post"><button class="btn btn-primary ms-4 mb-3" type="submit" name="likeComment" id="likeComment">Like</button></form>
         <?php endforeach; ?>
 

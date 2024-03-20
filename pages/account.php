@@ -1,5 +1,6 @@
 <?php
 require '../db_shenanigans/dbconn.php';
+require '../db_shenanigans/thing.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     if (isset($_POST['logout'])){
@@ -14,8 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
      }
 }
 $user_id = $_SESSION['user_id'];
-$getSavesStmt = $dbconn->prepare("SELECT * FROM saves WHERE user_id = :user_id");
-$getSavesStmt->bindParam(':user_id', $user_id);
+$getSavesStmt = $dbconn->prepare("SELECT posts.* FROM saves INNER JOIN posts ON saves.post_id = posts.ID WHERE saves.user_id = :user_id ORDER BY ID DESC");
+$getSavesStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+$getSavesStmt->execute();
 $posts = $getSavesStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -110,8 +112,44 @@ $posts = $getSavesStmt->fetchAll(PDO::FETCH_ASSOC);
   </div>
 </div>
 
-<div class="container row row-cols-2 float-end border-start gap-4" style="width:35rem;">
+<div class="container text-center p-0">
+<div class="row row-cols-6 gap-5 m-auto justify-content-center position-relative" style="top:3rem;">
 
+    <?php foreach($posts as $post): ?>
+
+    <?php
+    $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
+    $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
+    $likeCountStmt->execute();
+    $likeCount = $likeCountStmt->fetch(PDO::FETCH_ASSOC);
+
+    $saveCountStmt = $dbconn->prepare("SELECT COUNT(*) AS save_count FROM saves WHERE post_id = :postId");
+    $saveCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
+    $saveCountStmt->execute();
+    $saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
+    ?>
+    <a style="height:fit-content;"class='shadow-sm col border p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0' href="post.php?id=<?php echo $post['ID']; ?>" >
+    <?php 
+    if (isset($post['image'])){
+      $image = $post['image'];
+    echo "<img class='object-fit-cover' style='height:14rem;' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
+    }
+    else {
+      echo "<img src='../image/nedladdning.png' class='object-fit-cover' />";
+    }
+    ?>
+    <hr class='mt-0 z-1'>
+    <p class="z-1 bg-body-white text-break position-relative mb-0 p-2 text-start fw-medium" style="bottom:1rem;"><?php echo $post['title']; ?></p>
+    <div class="container d-flex flex-row gap-5 justify-content-center ms-0 mt-2" style="width:fit-content; height:fit-content;">
+    <p class="position-relative mb-0" style="width: fit-content; left: 1rem; height: fit-content; bottom:1rem;">Likes: <?php echo $likeCount['like_count'] ?></p>
+    <p class="position-relative mb-0" style="width: fit-content; left: 1rem; height: fit-content; bottom:1rem;">Saves: <?php echo $saveCount['save_count'] ?></p>
+    </div>
+    <p class="z-1 bg-body-white text-body-secondary position-relative text-center p-2 mb-0" style="bottom: 0rem;"><?php echo "Posted by: " . $post['created_by']; ?></p>
+    </a>
+  
+    <?php endforeach; ?>
+    
+</div>
 </div>
 
 </body>

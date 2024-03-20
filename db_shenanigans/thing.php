@@ -1,35 +1,22 @@
 <?php
 require '../vendor/autoload.php';
 
-use Aws\S3\S3Client;
-use Aws\Exception\AwsException;
+$bucket_name        = "images";
+$account_id         = "e3e80fa27f48463489ff183d8cd229a5";
+$access_key_id      = "a61e3b28bee3c0b48657393f4ae5796b";
+$access_key_secret  = "e17dc37bce5892f6086d2556ff67ace89bd97701a5cbb3233b18737270e6f6f0";
 
-$s3Client = new S3Client([
+$credentials = new Aws\Credentials\Credentials($access_key_id, $access_key_secret);
+
+$options = [
+    'region' => 'auto',
+    'endpoint' => "https://$account_id.r2.cloudflarestorage.com",
     'version' => 'latest',
-    'region'  => 'EEUR',
-    'endpoint' => 'https://r2.storage.cloudflare.com',
-    'credentials' => [
-        'key'    => 'a61e3b28bee3c0b48657393f4ae5796b',
-        'secret' => 'e17dc37bce5892f6086d2556ff67ace89bd97701a5cbb3233b18737270e6f6f0',
-    ],
+    'credentials' => $credentials
+];
+
+$s3_client = new Aws\S3\S3Client($options);
+
+$contents = $s3_client->listObjectsV2([
+    'Bucket' => $bucket_name
 ]);
-
-$bucket = 'images';
-$key = 'sus.png'; // Replace with the name you want to give the file in Cloudflare R2
-$filePath = '../image/sus.png'; // Replace with the local file path
-
-// Upload a file to Cloudflare R2
-try {
-    $result = $s3Client->putObject([
-        'Bucket' => $bucket,
-        'Key'    => $key,
-        'Body'   => fopen($filePath, 'r'),
-    ]);
-
-    echo "File uploaded successfully.\n";
-} catch (AwsException $e) {
-    // Display error message
-    echo $e->getMessage();
-    echo "\n";
-}
-

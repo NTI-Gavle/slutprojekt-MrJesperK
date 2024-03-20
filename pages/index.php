@@ -44,34 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
       echo 'Connection failed: '.$e->getMessage()."<br />";
     }
   }
-
-   
-
-    if (isset($_POST['title']) && isset($_POST['description'])){
-
-      $title = $_POST['title'];
-      $descr = $_POST['description'];
-      $category = $_POST['category'];
-      $user = $_SESSION['username'];
-      $name = $_FILES['image']['name'];
-   $type = $_FILES['image']['type'];
-   $data = file_get_contents($_FILES['image']['tmp_name']);
-
-          $stmt2 = $dbconn->prepare("INSERT INTO posts (title, description, created_by, image_name, image_type, image, created_at, category) VALUES (:title, :descr, :user, :name, :type, :data, now(), :category)");
-          $stmt2->bindParam(':title', $title);
-          $stmt2->bindParam(':descr', $descr);
-          $stmt2->bindParam(':user', $user);
-          $stmt2->bindParam(':name', $name);
-          $stmt2->bindParam(':type', $type);
-          $stmt2->bindParam(':data', $data);
-          $stmt2->bindParam(':category', $category);
-
-
-          $stmt2->execute();
-
-          header('Location: index.php');
-
-  }
 }
 $post_id = $dbconn->prepare("SELECT ID FROM posts");
 $post_id->execute();
@@ -139,7 +111,7 @@ $postId = $post_idRes['ID'];
         <li class="nav-item">
         <?php
         if (isset($_SESSION['username'])){
-              echo "<a href='account.php?user=".$_SESSION['username']."'class='btn'>Account</a>";
+              echo "<a href='account.php?user=".$_SESSION['username']."?id=".$_SESSION['user_id']."'class='btn'>Account</a>";
         }
             ?>
         </li>
@@ -177,7 +149,7 @@ $postId = $post_idRes['ID'];
         <h1 class="modal-title fs-5" id="ModalLabel">Create Post</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form action="" method="post" enctype="multipart/form-data">
+      <form action="../db_shenanigans/upload.php" method="post" enctype="multipart/form-data">
       <div class="modal-body d-flex flex-column mb-3 gap-3">
         <input type="file" name="image" id="image" required>
         <input type="text" name="title" id="title" placeholder="--Title--" maxlength="20" required>
@@ -245,10 +217,11 @@ $postId = $post_idRes['ID'];
     $saveCountStmt->execute();
     $saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
     ?>
-    <a style="height:fit-content;"class='col border p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0' href="post.php?id=<?php echo $post['ID']; ?>" >
+    <a style="height:fit-content;"class='shadow-sm col border p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0' href="post.php?id=<?php echo $post['ID']; ?>" >
     <?php 
     if (isset($post['image'])){
-    echo '<img class="object-fit-cover" style="height:14rem;" src="data:image/jpeg;base64,'.base64_encode($post['image']).'" />';
+      $image = $post['image'];
+    echo "<img class='object-fit-scale' style='height:14rem;' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
     }
     else {
       echo "<img src='../image/nedladdning.png' class='object-fit-cover' />";
