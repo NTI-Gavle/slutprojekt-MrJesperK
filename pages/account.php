@@ -18,7 +18,11 @@ $user_id = $_SESSION['user_id'];
 $getSavesStmt = $dbconn->prepare("SELECT posts.* FROM saves INNER JOIN posts ON saves.post_id = posts.ID WHERE saves.user_id = :user_id ORDER BY ID DESC");
 $getSavesStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
 $getSavesStmt->execute();
-$posts = $getSavesStmt->fetchAll(PDO::FETCH_ASSOC);
+$savedPosts = $getSavesStmt->fetchAll(PDO::FETCH_ASSOC);
+$getLikesStmt = $dbconn->prepare("SELECT posts.* FROM likes INNER JOIN posts ON likes.post_id = posts.ID WHERE likes.user_id = :user_id ORDER BY ID DESC");
+$getLikesStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+$getLikesStmt->execute();
+$likedPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -112,10 +116,11 @@ $posts = $getSavesStmt->fetchAll(PDO::FETCH_ASSOC);
   </div>
 </div>
 
-<div class="container text-center p-0">
+<div class="container text-center p-0" id="saved">
+  <h2>Saved posts</h2>
 <div class="row row-cols-6 gap-5 m-auto justify-content-center position-relative" style="top:3rem;">
 
-    <?php foreach($posts as $post): ?>
+    <?php foreach($savedPosts as $post): ?>
 
     <?php
     $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");

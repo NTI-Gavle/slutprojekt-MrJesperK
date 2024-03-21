@@ -134,6 +134,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <script src="../other_things/script.js"></script>
 </head>
 <body class="p-0 m-0">
@@ -183,45 +184,39 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
   </div>
 </nav>
-<div>
-<div class="container d-flex justify-content-center text-center p-0 z-0" style="width:40rem; height:40rem;">
-    <div class="row m-auto justify-content-center z-0">
-<?php
-$image = $post_data['image'];
-echo "<h1 class='text-start'>".$post_data['title']."</h1>";
-echo "<p class='text-start text-body-secondary fs-5 mb-0'>Posted by: ". $post_data['created_by']."</p>";
-echo "<p class='text-start text-body-secondary fs-6'>". $post_data['created_at']."</p>";
-echo "<img style='height:40rem; width:40rem;' class='border shadow object-fit-scale' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
-if (isset($_SESSION['username'])){
-    if ($_SESSION['admin'] === 'Y'){
-        echo "<button class='btn btn-danger position-relative' id='modalInput4' data-bs-toggle='modal' data-bs-target='#deleteModal' onclick='deleteModal()' style='top:1rem;'>Delete</button>";
-    }
-echo "<button class='btn btn-primary mt-4 z-3' id='modalInput3' data-bs-target='#CommentModal' data-bs-toggle='modal' onlick='modal3()'>Comment</button>";
-}
-?>
+<div class="container d-flex justify-content-center text-center p-0 z-0">
+<?php $image = $post_data['image']; ?>
+<div class="card" style="width: 50rem;">
+  <img src="https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/<?php echo $image; ?>" class="card-img-top" alt="picture">
+  <hr class="mb-0">
+  <div class="card-body">
+    <p class="card-text"><?php echo $post_data['description']; ?></p>
+  </div>
+  <ul class="list-group list-group-flush text-start">
+    <li class="list-group-item"><strong>Created by: <?php echo $post_data['created_by'] ?></strong></li>
+    <li class="list-group-item"><strong class="text-body-secondary">Posted at: <?php echo $post_data['created_at']?></strong></li>
+    <li class="list-group-item"><button class="btn btn-success position-relative text-center" type="submit" name="like" id="like"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+  <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
+</svg></button></li>
+    <li class="list-group-item"><button class="btn btn-primary position-relative text-center" type="submit" name="save" id="save"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+</svg></button></li>
+<?php if (isset($_SESSION['username'])){
+    echo "<li class='list-group-item'><button class='btn btn-primary' id='modalInput3' data-bs-target='#CommentModal' data-bs-toggle='modal' onlick='modal3()'>Comment</button></li>";
+ } ?>
+
+ <?php
+     if (isset($_SESSION['username']) && $_SESSION['admin'] === 'Y'){
+      echo "<li class='list-group-item'><button class='btn btn-danger' id='modalInput4' data-bs-toggle='modal' data-bs-target='#deleteModal' onclick='deleteModal()' style='top:1rem;'>Delete</button></li>";
+  }
+ ?>
+  </ul>
+</div>
+
 
     </div>
-</div>
 
 
-<div class="container d-flex float-end text-center p-0 z-0 position-absolute" style="right: 6rem; top: 20rem; width:fit-content;">
-    <div class=" m-auto justify-content-center z-0">
-        <?php
-        echo "<h2 class='mt-4' style='height:5rem; width:30rem;'>Description</h2>";
-        echo "<hr class='position-relative' style='bottom:1.3rem;'>";
-        echo "<h4 class='text-center p-2 position-relative mt-3' style='width:30rem; top:-2rem;'>". $post_data['description'] ."</h4>";
-        ?>
-    </div>
-    <div class="container position-absolute d-flex justify-content-center text-center gap-2 p-0 m-0" style="height:fit-content; width:fit-content; top:-8rem; left:-14rem;">
-<form method="post">
-    <button class="btn btn-success position-relative text-center" type="submit" name="like" id="like">Like</button>
-</form>
-<form method="post">
-    <button class="btn btn-success position-relative text-center" type="submit" name="save" id="save">Save</button>
-</form>
-</div>
-</div>
-</div>
 
 
 
@@ -271,19 +266,21 @@ echo "<button class='btn btn-primary mt-4 z-3' id='modalInput3' data-bs-target='
   </div>
 </div>
 
-<hr class="m-0 position-relative" style="top:14rem;">
-<div class="d-flex flex-column justify-content-center align-self-center position-relative m-auto border-start border-end" style="width:70rem; height:fit-content; top:14rem;">
-    <h2 class="text-center mt-3">Comments</h2>
-    <div>
-        <?php foreach ($Comments as $Comment): ?>
-            <hr>
-            <p class="text-start fs-6 text-body-secondary ms-3 mb-0 mt-3"><?php echo $Comment['created_by']; ?></p>
-        <p class="fs-5 mb-5 ms-2 text-break"><?php echo $Comment['CommentText']; ?></p>
-        <form method="post"><button class="btn btn-primary ms-4 mb-3" type="submit" name="likeComment" id="likeComment">Like</button></form>
-        <?php endforeach; ?>
 
-    </div>
+    <h2 class="text-center mt-3">Comments</h2>
+<?php foreach ($Comments as $Comment): ?>
+  <div class="card m-3 shadow-sm">
+  <div class="card-header">
+    <?php echo $Comment['created_by']?>
+  </div>
+  <div class="card-body">
+    <p class="card-text"><?php echo $Comment['CommentText'] ?></p>
+    <a href="#" class="btn btn-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+  <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
+</svg></a>
+  </div>
 </div>
+<?php endforeach; ?>
 
 </body>
 </html>
