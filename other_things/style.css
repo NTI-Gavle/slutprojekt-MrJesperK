@@ -1,5 +1,5 @@
 .hoverEffect:hover{
-   transform: scale(1.03);
+   transform: scale(1.01);
     transition-duration: 100ms;
     transition-timing-function: ease-in-out;
 }

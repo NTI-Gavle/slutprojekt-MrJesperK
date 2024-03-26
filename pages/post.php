@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     
 }
 
-$CommentSql = "SELECT * FROM comments WHERE postID = :post_id";
+$CommentSql = "SELECT * FROM comments WHERE postID = :post_id ORDER BY ID DESC";
 
 $CommentStmt = $dbconn->prepare($CommentSql);
 $CommentStmt->bindParam(':post_id', $post_id);
@@ -186,21 +186,20 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
 </nav>
 <div class="container d-flex justify-content-center text-center p-0 z-0">
 <?php $image = $post_data['image']; ?>
-<div class="card" style="width: 50rem;">
+<div class="card m-3" style="width: 50rem;">
   <img src="https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/<?php echo $image; ?>" class="card-img-top" alt="picture">
-  <hr class="mb-0">
   <div class="card-body">
     <p class="card-text"><?php echo $post_data['description']; ?></p>
   </div>
   <ul class="list-group list-group-flush text-start">
     <li class="list-group-item"><strong>Created by: <?php echo $post_data['created_by'] ?></strong></li>
     <li class="list-group-item"><strong class="text-body-secondary">Posted at: <?php echo $post_data['created_at']?></strong></li>
-    <li class="list-group-item"><button class="btn btn-success position-relative text-center" type="submit" name="like" id="like"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+    <li class="list-group-item"><form method="post"><button class="btn btn-success position-relative text-center" type="submit" name="like" id="like"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
   <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
-</svg></button></li>
-    <li class="list-group-item"><button class="btn btn-primary position-relative text-center" type="submit" name="save" id="save"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+</svg></form></button></li>
+    <li class="list-group-item"><form method="post"><button class="btn btn-primary position-relative text-center" type="submit" name="save" id="save"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
   <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
-</svg></button></li>
+</svg></form></button></li>
 <?php if (isset($_SESSION['username'])){
     echo "<li class='list-group-item'><button class='btn btn-primary' id='modalInput3' data-bs-target='#CommentModal' data-bs-toggle='modal' onlick='modal3()'>Comment</button></li>";
  } ?>
@@ -229,12 +228,12 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
       </div>
       <form action="" method="post">
       <div class="modal-body d-flex flex-column mb-3 gap-3">
-        <textarea name="commentText" id="commentText" cols="20" rows="10" placeholder="Comment" maxlength="200"></textarea>
+        <textarea name="commentText" id="commentText" cols="20" rows="10" placeholder="Comment" maxlength="200" style="resize:none";></textarea>
       </div>
       <div class="modal-footer">
         <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <input type="submit" class="btn btn-primary" value="Comment" name="Comment" id="Comment"></input>
+        <input type="submit" class="btn btn-primary" value="Comment" name="Comment" id="Comment" />
       </div>
       </form>
     </div>
@@ -281,6 +280,5 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
   </div>
 </div>
 <?php endforeach; ?>
-
 </body>
 </html>

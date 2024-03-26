@@ -3,14 +3,35 @@ session_start();
 require '../db_shenanigans/dbconn.php';
 require '../db_shenanigans/thing.php';
 
-
-$sql = "SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC";
-
-$stmt = $dbconn->prepare($sql);
-
-$stmt->execute();
-
-$posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
+  // Sanitize the input to prevent SQL injection
+  $search = '%' . $_POST['search'] . '%';
+  
+  // Prepare the statement with a placeholder for the search term
+  $searchStmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts WHERE title LIKE ? ORDER BY ID DESC");
+  
+  // Bind the parameter
+  $searchStmt->bindParam(1, $search, PDO::PARAM_STR);
+  
+  // Execute the statement
+  $searchStmt->execute();
+  
+  // Fetch the results
+  $posts = $searchStmt->fetchAll(PDO::FETCH_ASSOC);
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $sql = "SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC";
+  
+  $stmt = $dbconn->prepare($sql);
+  $stmt->execute();
+  $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+  // Default query if no form submission has happened
+  $sql = "SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC";
+  
+  $stmt = $dbconn->prepare($sql);
+  $stmt->execute();
+  $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
@@ -44,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
       echo 'Connection failed: '.$e->getMessage()."<br />";
     }
   }
+
 }
 $post_id = $dbconn->prepare("SELECT ID FROM posts");
 $post_id->execute();
@@ -62,7 +84,7 @@ $postId = $post_idRes['ID'];
 <script src="../other_things/script.js" defer></script>
 <link rel="stylesheet" href="../other_things/style.css">
 </head>
-<body class="m-0 p-0" style="width:100%; height:100%;">
+<body class="m-0 p-0 d-flex flex-column" style="width:100%; height:100vh;">
 
     <Header class="container-fluid border-bottom text-center">
         <a href="#" class="text-decoration-none "><h2 class="text-black fw-bold">Only&#128405;Fans</h2></a>
@@ -133,8 +155,8 @@ $postId = $post_idRes['ID'];
         ?>
         </li>
       </ul>
-      <form class="d-flex" role="search">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+      <form class="d-flex" role="search" id="searchForm" onsubmit="return test(event)">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
         <button class="btn btn-outline-success" type="submit">Search</button>
       </form>
     </div>
@@ -186,7 +208,10 @@ $postId = $post_idRes['ID'];
       <div class="modal-body d-flex flex-column mb-3 gap-3">
         <input type="text" name="username" id="username" placeholder="--Username--">
         <input type="password" name="password" id="password" placeholder="--Password--">
-        <input class="float-start" type="checkbox" onclick="Shenanigans()">
+        <div class="container d-flex flex-row">
+        <p id="passLabel" style="margin-bottom:1.17rem;">Show password: </p>
+        <input class="mb-3 ms-2" type="checkbox" onclick="Shenanigans()">
+        </div>
         <a href="register.php">No account?</a>
         <a href="passreset.php">Forgot password?</a>
 
@@ -201,7 +226,7 @@ $postId = $post_idRes['ID'];
   </div>
 </div>
 
-<div class="row row-cols-6 gap-5 m-auto justify-content-center position-relative" style="top:3rem;">
+<div class="row row-cols-6 column-gap-5 row-gap-3 m-auto justify-content-center position-relative" style="top:3rem;">
 
     <?php foreach($posts as $post): ?>
 
@@ -216,7 +241,7 @@ $postId = $post_idRes['ID'];
     $saveCountStmt->execute();
     $saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
     ?>
-<a href="post.php?id=<?php echo $post['ID']; ?>" class="card shadow-sm col border p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0" style="width: 18rem;">
+<a href="post.php?id=<?php echo $post['ID']; ?>" class="card shadow-sm col border mb-4 p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0" style="width: 18rem;">
 <?php 
     if (isset($post['image'])){
       $image = $post['image'];
@@ -239,5 +264,10 @@ $postId = $post_idRes['ID'];
   </a>
     <?php endforeach; ?>
   </div>
+
+<footer class="container-fluid bg-body-tertiary border-top border-black mt-5 position-relative bottom-0">
+  <h1 class="text-center align-middle fw-bold text-decoration-underline">&copy;BALLS</h1>
+</footer>
+
 </body>
 </html>

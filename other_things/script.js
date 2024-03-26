@@ -3,14 +3,40 @@ const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstra
 
 function Shenanigans() {
   var password = document.getElementById("password");
+  var passLabel = document.getElementById("passLabel");
   if (password.type === "password"){
     password.type = "text";
-    textContent = "Hide password";
+    passLabel.textContent = "Hide password: ";
   }
   else{
     password.type = "password";
-    textContent = "Show password";
+    passLabel.textContent = "Show password: ";
   }
+}
+
+function test(event) {
+  event.preventDefault();
+  console.log("PENIS");
+  var data = new FormData(document.getElementById("searchForm"));
+  console.log("Form data:", data);
+  
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function() {
+    console.log("xhr.onload function called");
+      if (xhr.status === 200) {
+          console.log(xhr.responseText);
+          document.body.innerHTML = xhr.responseText;
+      } else {
+          console.error('Request failed. Status: ' + xhr.status);
+      }
+  };
+
+  var url = "index.php";
+  xhr.open("POST", url);
+  console.log("Sending request to:", url);
+  xhr.send(data);
+
+  return false; // Prevent default form submission
 }
 
 function modal1(){
@@ -64,3 +90,4 @@ function modal5(){
     Input.focus()
   })
 }
+

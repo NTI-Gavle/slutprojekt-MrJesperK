@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])){
     $mail_content .='</body></html>';
     $headers = 'MIME-Version: 1.0' . "\r\n";
     $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+    
     mail($email, "Password reset", $mail_content, $headers);
     header('Refresh: 0');
     } catch(PDOException $e) {
