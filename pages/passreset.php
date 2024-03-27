@@ -1,16 +1,41 @@
 <?php 
 require '../db_shenanigans/dbconn.php';
+require '../vendor/autoload.php';
+use ReallySimpleJWT\Token;
+
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])){
     try{
     $email = $_POST['email'];
-    $mail_content = '<!DOCTYPE html><body>';
-    $mail_content .= '<p>balls:</p> <a href="http://localhost:8080/projekt/slutprojekt-MrJesperK/pages/newpassword.php">Kill yourslef</a>';
-    $mail_content .='</body></html>';
-    $headers = 'MIME-Version: 1.0' . "\r\n";
-    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+
+    $getUIDStmt = $dbconn->prepare("SELECT ID FROM users WHERE email = :email");
+    $getUIDStmt->bindParam(':email', $email);
+    $getUIDStmt->execute();
+
+    $user_id = $getUIDStmt->fetch(PDO::FETCH_ASSOC);
+    if ($user_id){
+        $mail_content = '<!DOCTYPE html><body>';
+        $mail_content .= '<p>balls:</p> <a href="http://localhost:8080/projekt/slutprojekt-MrJesperK/pages/newpassword.php">Kill yourslef</a>';
+        $mail_content .='</body></html>';
+        $headers = 'MIME-Version: 1.0' . "\r\n";
+        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+        mail($email, "Password reset", $mail_content, $headers);
+
+    $payload = [
+        'iat' => time(),
+        'uid' => $user_id,
+        'exp' => time() + 10,
+        'iss' => 'localhost'
+    ];
     
-    mail($email, "Password reset", $mail_content, $headers);
+    $secret = 'qeZkIMG!u4#]isfu;i!hYw9PD]b1i^Wv_to^)bf%z.wh]tVsm';
+
+    $token = Token::customPayload($payload, $secret);
+    
+} else {
+    echo 'This email does not exist';
+}    
     header('Refresh: 0');
     } catch(PDOException $e) {
         echo $e;

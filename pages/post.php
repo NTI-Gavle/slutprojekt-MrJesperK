@@ -4,9 +4,7 @@ require '../db_shenanigans/dbconn.php';
 if (isset($_GET['id'])){
 $post_id = $_GET['id'];
 
-$sql = "SELECT * FROM posts WHERE ID = :post_id";
-
-$stmt = $dbconn->prepare($sql);
+$stmt = $dbconn->prepare("SELECT * FROM posts WHERE ID = :post_id");
 
 $stmt->bindParam(':post_id', $post_id);
 $stmt->execute();

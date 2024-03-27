@@ -20,3 +20,4 @@ $s3_client = new Aws\S3\S3Client($options);
 $contents = $s3_client->listObjectsV2([
     'Bucket' => $bucket_name
 ]);
+

@@ -19,16 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
   // Fetch the results
   $posts = $searchStmt->fetchAll(PDO::FETCH_ASSOC);
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $sql = "SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC";
-  
-  $stmt = $dbconn->prepare($sql);
+  $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC");
   $stmt->execute();
   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
-  // Default query if no form submission has happened
-  $sql = "SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC";
-  
-  $stmt = $dbconn->prepare($sql);
+  $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC");
   $stmt->execute();
   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
