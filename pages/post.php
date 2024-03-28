@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
         $postID = $_GET['id'];
         $user = $_SESSION['username'];
-        $text = $_POST['commentText'];
+        $text = htmlspecialchars($_POST['commentText']);
 
         $stmt = $dbconn->prepare("INSERT INTO comments (postID, created_by, CommentText, created_at) VALUES (:postID, :user, :text, now())");
         $stmt->bindParam(':postID', $postID);

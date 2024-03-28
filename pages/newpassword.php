@@ -3,7 +3,7 @@ require '../db_shenanigans/dbconn.php';
 require '../vendor/autoload.php';
 use ReallySimpleJWT\Token;
 
-$token = '';
+$token = 'PenisBallsInMyAss';
 $secret = 'qeZkIMG!u4#]isfu;i!hYw9PD]b1i^Wv_to^)bf%z.wh]tVsm';
 
 $result = Token::validate($token, $secret);

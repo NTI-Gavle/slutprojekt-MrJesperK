@@ -50,8 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["title"])) {
     }
     if (isset($_POST['title']) && isset($_POST['description'])){
 
-        $title = $_POST['title'];
-        $descr = $_POST['description'];
+        $title = htmlspecialchars($_POST['title']);
+        $descr = htmlspecialchars($_POST['description']);
         $category = $_POST['category'];
         $user = $_SESSION['username'];
         $image = $filename;

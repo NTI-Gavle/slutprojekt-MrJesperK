@@ -4,9 +4,9 @@ require '../db_shenanigans/dbconn.php';
 if ($_SERVER['REQUEST_METHOD'] == "POST"){
 if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['email'])){
 
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $email = $_POST['email'];
+    $username = htmlspecialchars($_POST['username']);
+    $password = htmlspecialchars($_POST['password']);
+    $email = htmlspecialchars($_POST['email']);
 
     try {
         $stmt = $dbconn->prepare("SELECT * FROM users WHERE username = :username OR email = :email");
