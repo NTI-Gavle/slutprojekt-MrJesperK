@@ -201,45 +201,53 @@ $postId = $post_idRes['ID'];
   </div>
 </div>
 
-<div class="container text-center p-0">
-<div class="row row-cols-6 gap-5 m-auto justify-content-center position-relative" style="top:3rem;">
+<div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
 
-    <?php foreach($posts as $post): ?>
+    <?php foreach ($posts as $post): ?>
 
-    <?php
-    $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
-    $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
-    $likeCountStmt->execute();
-    $likeCount = $likeCountStmt->fetch(PDO::FETCH_ASSOC);
+      <?php
+      $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
+      $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
+      $likeCountStmt->execute();
+      $likeCount = $likeCountStmt->fetch(PDO::FETCH_ASSOC);
 
-    $saveCountStmt = $dbconn->prepare("SELECT COUNT(*) AS save_count FROM saves WHERE post_id = :postId");
-    $saveCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
-    $saveCountStmt->execute();
-    $saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
-    ?>
-    <a style="height:fit-content;"class='col border p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0' href="post.php?id=<?php echo $post['ID']; ?>" >
-    <?php 
-    if (isset($post['image'])){
-      $image = $post['image'];
-    echo "<img class='object-fit-cover' style='height:14rem;' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
-    }
-    else {
-      echo "<img src='../image/nedladdning.png' class='object-fit-cover' />";
-    }
-    ?>
-    <hr class='mt-0 z-1'>
-    <p class="z-1 bg-body-white text-break position-relative mb-0 p-2 text-start fw-medium" style="bottom:1rem;"><?php echo $post['title']; ?></p>
-    <div class="container d-flex flex-row gap-5 justify-content-center ms-0 mt-2" style="width:fit-content; height:fit-content;">
-    <p class="position-relative mb-0" style="width: fit-content; left: 1rem; height: fit-content; bottom:1rem;">Likes: <?php echo $likeCount['like_count'] ?></p>
-    <p class="position-relative mb-0" style="width: fit-content; left: 1rem; height: fit-content; bottom:1rem;">Saves: <?php echo $saveCount['save_count'] ?></p>
-    </div>
-    <p class="z-1 bg-body-white text-body-secondary position-relative text-center p-2 mb-0" style="bottom: 0rem;"><?php echo "Posted by: " . $post['created_by']; ?></p>
-    </a>
-  
+      $saveCountStmt = $dbconn->prepare("SELECT COUNT(*) AS save_count FROM saves WHERE post_id = :postId");
+      $saveCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
+      $saveCountStmt->execute();
+      $saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
+      ?>
+      <a href="post.php?id=<?php echo $post['ID']; ?>"
+        class="card shadow-sm col border mb-5 p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0"
+        style="width: 18rem;">
+        <?php
+        if (isset($post['image'])) {
+          $image = $post['image'];
+          echo "<img class='card-img-top' style='height:14rem;' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
+        } else {
+          echo "<img src='../image/nedladdning.png' class='card-img-top' />";
+        }
+        ?>
+
+        <ul class="list-group list-group-flush">
+          <h5 class="list-group-item">
+            <?php echo $post['title']; ?>
+          </h5>
+          <li class="list-group-item">Likes:
+            <?php echo $likeCount['like_count'] ?>
+          </li>
+          <li class="list-group-item">Saves:
+            <?php echo $saveCount['save_count'] ?>
+          </li>
+          <li class="list-group-item text-body-secondary">Created by:
+            <?php echo $post['created_by'] ?>
+          </li>
+        </ul>
+        <!-- <div class="card-body">
+    <p class="card-title text-center"><?php echo $post['description']; ?></p>
+  </div> -->
+      </a>
     <?php endforeach; ?>
-    
-</div>
-</div>
+  </div>
 
 </body>
 </html>

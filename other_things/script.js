@@ -42,6 +42,19 @@ function test(event) {
   return false; // Prevent default form submission
 }
 
+function likePost(event){
+  event.preventDefault();
+  const data = new FormData(document.getElementById("likeForm"));
+
+  const xhr = new XMLHttpRequest();
+  
+  const url = "post.php";
+  xhr.open("POST", url);
+  xhr.send(data);
+
+  return false;
+}
+
 function thing(event) {
   event.preventDefault;
 
