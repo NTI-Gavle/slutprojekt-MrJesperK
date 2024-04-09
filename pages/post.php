@@ -238,6 +238,27 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
   </div>
 </div>
 
+<div class="modal fade" id="ReplyModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="ModalLabel"><?php echo $post_data['title']; ?></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="" method="post">
+      <div class="modal-body d-flex flex-column mb-3 gap-3">
+        <textarea name="replyText" id="replyText" cols="20" rows="10" placeholder="Reply" maxlength="200" style="resize:none;"></textarea>
+      </div>
+      <div class="modal-footer">
+        <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-primary" value="Reply" name="Reply" id="Reply" />
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -264,17 +285,24 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 
-    <h2 class="text-center mt-3">Comments</h2>
+    <h2 class="text-center m-3">Comments</h2>
 <?php foreach ($Comments as $Comment): ?>
-  <div class="card m-3 shadow-sm">
+  <div class="card m-3 p-0 shadow-sm">
   <div class="card-header">
     <?php echo $Comment['created_by']?>
   </div>
   <div class="card-body">
     <p class="card-text"><?php echo $Comment['CommentText'] ?></p>
-    <a href="#" class="btn btn-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+    <ul class="list-group list-group-flush">
+    <li class="list-group-item">
+      <a href="#" class="btn btn-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
   <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
 </svg></a>
+</li>
+<li class="list-group-item">
+  <button class="btn btn-primary" id="replyModalInput" data-bs-toggle="modal" data-bs-target="#ReplyModal" onclick="modal6()">View replies</button>
+</li>
+</ul>
   </div>
 </div>
 <?php endforeach; ?>

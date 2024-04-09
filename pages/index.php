@@ -29,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
   if (isset($_POST['username']) && isset($_POST['password'])) {
 
 
@@ -169,7 +168,7 @@ $postId = $post_idRes['ID'];
             <input type="file" name="image" id="image" required>
             <input type="text" name="title" id="title" placeholder="--Title--" maxlength="20" required>
             <textarea name="description" id="description" cols="30" rows="4" placeholder="--description--"
-              maxlength="200" required style="resize:none;"></textarea>
+              maxlength="150" required style="resize:none;"></textarea>
             <select name="category" id="category" required>
               <option value="None">--Choose Category--</option>
               <option value="Tower">Tower fan</option>

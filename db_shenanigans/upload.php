@@ -40,15 +40,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["title"])) {
             ]);
             // Display success message
             echo "Image uploaded successfully!";
+            header('Location: ../pages/index.php');
         } catch (AwsException $e) {
             // Handle AWS SDK exception
             echo "Error uploading image: " . $e->getMessage();
+            header('Location: ../pages/index.php');
         }
     } else {
         // Handle file upload error
         echo "Error uploading image!";
+        header('Location: ../pages/index.php');
     }
-    if (isset($_POST['title']) && isset($_POST['description'])){
+    if (isset($_POST['title']) && isset($_POST['description']) && !strlen($_POST["title"]) > 20 && !strlen($_POST['description']) > 150){
 
         $title = htmlspecialchars($_POST['title']);
         $descr = htmlspecialchars($_POST['description']);

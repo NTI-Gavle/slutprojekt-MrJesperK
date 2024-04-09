@@ -102,3 +102,12 @@ function modal5() {
     Input.focus();
   });
 }
+
+function modal6() {
+  const Modal = document.getElementById("ReplyModal");
+  const Input = document.getElementById("replyModalInput");
+
+  Modal.addEventListener("shown.bs.modal", () => {
+    Input.focus();
+  });
+}
