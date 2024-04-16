@@ -10,14 +10,12 @@ function Shenanigans() {
   var passLabel = document.getElementById("passLabel");
   if (password.type === "password") {
     password.type = "text";
-    passLabel.textContent = "Hide password: ";
   } else {
     password.type = "password";
-    passLabel.textContent = "Show password: ";
   }
 }
 
-function test(event) {
+function searching(event) {
   event.preventDefault();
   console.log("PENIS");
   var data = new FormData(document.getElementById("searchForm"));
@@ -40,19 +38,6 @@ function test(event) {
   xhr.send(data);
 
   return false; // Prevent default form submission
-}
-
-function likePost(event){
-  event.preventDefault();
-  const data = new FormData(document.getElementById("likeForm"));
-
-  const xhr = new XMLHttpRequest();
-  
-  const url = "post.php";
-  xhr.open("POST", url);
-  xhr.send(data);
-
-  return false;
 }
 
 function thing(event) {
@@ -123,4 +108,10 @@ function modal6() {
   Modal.addEventListener("shown.bs.modal", () => {
     Input.focus();
   });
+}
+
+function replyThing(event){
+event.preventDefault();
+
+return false;
 }

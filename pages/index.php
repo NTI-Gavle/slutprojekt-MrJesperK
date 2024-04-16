@@ -147,7 +147,7 @@ $postId = $post_idRes['ID'];
             ?>
           </li>
         </ul>
-        <form class="d-flex" role="search" id="searchForm" onsubmit="return test(event)">
+        <form class="d-flex" role="search" id="searchForm" onsubmit="return searching(event)" method="post">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>

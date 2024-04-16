@@ -7,32 +7,37 @@ use ReallySimpleJWT\Token;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])){
     try{
-    $email = $_POST['email'];
+        $email = htmlspecialchars($_POST['email']);
 
-    $getUIDStmt = $dbconn->prepare("SELECT ID FROM users WHERE email = :email");
-    $getUIDStmt->bindParam(':email', $email);
-    $getUIDStmt->execute();
+        $getUIDStmt = $dbconn->prepare("SELECT ID FROM users WHERE email = :email LIMIT 1");
+        $getUIDStmt->bindParam(':email', $email);
+        $getUIDStmt->execute();
+    
+        $user_id = $getUIDStmt->fetch(PDO::FETCH_ASSOC);
 
-    $user_id = $getUIDStmt->fetch(PDO::FETCH_ASSOC);
+        echo $user_id['ID'];
+        $payload = [
+            'iat' => time(),
+            'uid' => $user_id['ID'],
+            'exp' => time() + 300,
+            'iss' => 'localhost'
+        ];
+        
+        $secret = 'qeZkIMG!u4#]isfu;i!hYw9PD]b1i^Wv_to^)bf%z.wh]tVsm';
+    
+        $token = Token::customPayload($payload, $secret);
+        echo $token;
+
+
     if ($user_id){
         $mail_content = '<!DOCTYPE html><body>';
-        $mail_content .= '<p>balls:</p> <a href="http://localhost:8080/projekt/slutprojekt-MrJesperK/pages/newpassword.php">Kill yourslef</a>';
+        $mail_content .= "<p>balls:</p> <a href='http://localhost:8080/projekt/slutprojekt-MrJesperK/pages/newpassword.php?t=$token'>Kill yourslef</a>";
         $mail_content .='</body></html>';
         $headers = 'MIME-Version: 1.0' . "\r\n";
         $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
         mail($email, "Password reset", $mail_content, $headers);
 
-    $payload = [
-        'iat' => time(),
-        'uid' => $user_id,
-        'exp' => time() + 10,
-        'iss' => 'localhost'
-    ];
-    
-    $secret = 'qeZkIMG!u4#]isfu;i!hYw9PD]b1i^Wv_to^)bf%z.wh]tVsm';
-
-    $token = Token::customPayload($payload, $secret);
-    
+  header('Refresh: 0');
 } else {
     echo 'This email does not exist';
 }    
@@ -55,11 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])){
 <body>
     <div class="container d-flex flex-column justify-content-center m-auto p-0" style="width:fit-content;">
         <h3>Enter your email</h3>
-    <form method="post" onsubmit="return thing(event)">
+    <form method="post">
         <input type="email" name="email" id="email" placeholder="example@gmail.com">
         <button type="submit" class="btn btn-primary" name="emailForm" id="emailForm">submit</button>
     </form>
-    <strong>You will die</strong>
+    <strong>It will be used for devious acts</strong>
     </div>
 </body>
 </html>
