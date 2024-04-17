@@ -24,7 +24,9 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
-    <title><?php echo $user_id['ID'] ?></title>
+    <link rel="stylesheet" href="../other_things/style.css">
+    <script src="../other_things/script.js"></script>
+    <title><?php echo $user ?></title>
 </head>
 <body>
 
@@ -98,6 +100,13 @@
     </div>
   </nav>
   <h2 class="text-center text-decoration-underline"><?php echo $user ?>'s saved posts</h2>
+
+  <h3 class="mt-4 text-center">
+    <?php if (empty($userLikedPosts)): ?>
+        Nothing to see here
+    <?php endif; ?>
+  </h3>
+
   <div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
 
   <?php foreach($userLikedPosts as $post):?>

@@ -57,8 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])){
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="../other_things/script.js" defer></script>
 </head>
-<body>
-    <div class="container d-flex flex-column justify-content-center m-auto p-0" style="width:fit-content;">
+<body class="p-0 m-0">
+  <Header class="container-fluid text-center mt-2 border-bottom border-black">
+    <a href="index.php" class="text-decoration-none ">
+      <h2 class="text-black fw-bold">Only&#128405;Fans</h2>
+    </a>
+  </Header>
+
+    <div class="container d-flex flex-column justify-content-center m-auto p-0 mt-3" style="width:fit-content;">
         <h3>Enter your email</h3>
     <form method="post">
         <input type="email" name="email" id="email" placeholder="example@gmail.com">

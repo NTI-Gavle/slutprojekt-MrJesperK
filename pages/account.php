@@ -14,15 +14,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         header('Location: index.php');
      }
 }
+$whatPosts = $_GET['p'];
+
 $user_id = $_SESSION['user_id'];
+if ($whatPosts == 'saved' || $whatPosts != 'liked'){
 $getSavesStmt = $dbconn->prepare("SELECT posts.* FROM saves INNER JOIN posts ON saves.post_id = posts.ID WHERE saves.user_id = :user_id ORDER BY ID DESC");
 $getSavesStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
 $getSavesStmt->execute();
-$savedPosts = $getSavesStmt->fetchAll(PDO::FETCH_ASSOC);
+$whatPosts = $getSavesStmt->fetchAll(PDO::FETCH_ASSOC);
+} elseif($whatPosts == 'liked'){
 $getLikesStmt = $dbconn->prepare("SELECT posts.* FROM likes INNER JOIN posts ON likes.post_id = posts.ID WHERE likes.user_id = :user_id ORDER BY ID DESC");
 $getLikesStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
 $getLikesStmt->execute();
-$likedPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
+$whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,6 +40,8 @@ $likedPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Document</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="../other_things/style.css">
+<script src="../other_things/script.js"></script>
 </head>
 <body>
 <Header class="container-fluid border-bottom text-center">
@@ -49,16 +59,24 @@ $likedPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
             Categories
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#"><b>all Fans</b></a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Tower Fans</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Table Fans</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Ceiling Fans</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Handheld Fans</a></li>
-          </ul>
+              <li><a class="dropdown-item" href="index.php"><b>all Fans</b></a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="index.php?c=tower">Tower Fans</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="index.php?c=table">Table Fans</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="index.php?c=ceiling">Ceiling Fans</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="index.php?c=handheld">Handheld Fans</a></li>
+            </ul>
         </li>
 
         <li class="nav-item">
@@ -117,11 +135,24 @@ $likedPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <div class="container text-center p-0" id="saved">
-  <h2>Saved posts</h2>
-<div class="row row-cols-6 gap-5 m-auto justify-content-center position-relative" style="top:3rem;">
+<div class="dropdown-center">
+  <button class="btn dropdown-toggle btn-lg border border-secondary shadow" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <?php echo $_GET['p']?>
+  </button>
+  <ul class="dropdown-menu text-center">   
+    <li><a class="dropdown-item" href="account.php?user=<?php echo $_SESSION['username']?>&p=<?php echo "saved"?>"">Saved</a></li>
+    <li class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="account.php?user=<?php echo $_SESSION['username']?>&p=<?php echo "liked"?>">Liked</a></li>
+  </ul>
+</div>
+<h2 class="mt-4">
+    <?php if (empty($whatPosts)): ?>
+        Nothing to see here
+    <?php endif; ?>
+</h2>
+<div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
 
-    <?php foreach($savedPosts as $post): ?>
-
+    <?php foreach($whatPosts as $post): ?>
     <?php
     $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
     $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
@@ -133,24 +164,34 @@ $likedPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
     $saveCountStmt->execute();
     $saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
     ?>
-    <a style="height:fit-content;"class='shadow-sm col border p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0' href="post.php?id=<?php echo $post['ID']; ?>" >
-    <?php 
-    if (isset($post['image'])){
-      $image = $post['image'];
-    echo "<img class='object-fit-cover' style='height:14rem;' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
-    }
-    else {
-      echo "<img src='../image/nedladdning.png' class='object-fit-cover' />";
-    }
-    ?>
-    <hr class='mt-0 z-1'>
-    <p class="z-1 bg-body-white text-break position-relative mb-0 p-2 text-start fw-medium" style="bottom:1rem;"><?php echo $post['title']; ?></p>
-    <div class="container d-flex flex-row gap-5 justify-content-center ms-0 mt-2" style="width:fit-content; height:fit-content;">
-    <p class="position-relative mb-0" style="width: fit-content; left: 1rem; height: fit-content; bottom:1rem;">Likes: <?php echo $likeCount['like_count'] ?></p>
-    <p class="position-relative mb-0" style="width: fit-content; left: 1rem; height: fit-content; bottom:1rem;">Saves: <?php echo $saveCount['save_count'] ?></p>
-    </div>
-    <p class="z-1 bg-body-white text-body-secondary position-relative text-center p-2 mb-0" style="bottom: 0rem;"><?php echo "Posted by: " . $post['created_by']; ?></p>
-    </a>
+
+    <a href="post.php?id=<?php echo $post['ID']; ?>"
+        class="card shadow-sm col border mb-5 p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0"
+        style="width: 18rem;">
+        <?php
+        if (isset($post['image'])) {
+          $image = $post['image'];
+          echo "<img class='card-img-top' style='height:14rem;' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
+        } else {
+          echo "<img src='../image/nedladdning.png' class='card-img-top' />";
+        }
+        ?>
+
+        <ul class="list-group list-group-flush">
+          <h5 class="list-group-item">
+            <?php echo $post['title']; ?>
+          </h5>
+          <li class="list-group-item">Likes:
+            <?php echo $likeCount['like_count'] ?>
+          </li>
+          <li class="list-group-item">Saves:
+            <?php echo $saveCount['save_count'] ?>
+          </li>
+          <li class="list-group-item text-body-secondary">Created by:
+            <?php echo $post['created_by'] ?>
+          </li>
+        </ul>
+      </a>
   
     <?php endforeach; ?>
     

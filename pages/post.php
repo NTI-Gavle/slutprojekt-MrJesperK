@@ -303,7 +303,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['username'])){
       if (isset($_POST[$commentToReplyTo])){
         try{
-      $reply = $_POST[$commentToReplyTo];
+      $reply = htmlspecialchars($_POST[$commentToReplyTo]);
 
       $replyStmt = $dbconn->prepare("INSERT INTO replies (comment_id, reply_text, created_by, created_at) VALUES (:comment_id, :reply_text, :created_by, now())");
       $replyStmt->bindParam(':comment_id', $commentToReplyTo, PDO::PARAM_INT);
@@ -317,9 +317,19 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
       }
     }
   ?>
-  <div class="card m-3 p-0 shadow-sm">
+  <div class="card m-3 p-0 shadow-sm" id="<?php echo $Comment['ID'] ?>">
   <div class="card-header">
-    <?php echo "<a href='user.php?u=$createdBy'>$createdBy</a>"?>
+    <?php 
+    $createdAt = $Comment['created_at'];
+    if (!isset($_SESSION['username']) || $createdBy != $_SESSION['username']){
+    echo "<p class='m-0'>
+    <a href='user.php?u=$createdBy' class='fw-bold'>$createdBy</a>
+    <span class='float-end'>$createdAt</span>
+    </p>";
+    } else {
+      echo "<p class='m-0'><span class='fw-bold'>$createdBy</span> <span class='text-secondary'>(you)</span><span class='float-end text-secondary'>$createdAt</span></p>";
+    }
+    ?>
   </div>
   <div class="card-body m-0 ps-0 pe-0">
     <p class="card-text ps-3"><?php echo $Comment['CommentText'] ?></p>

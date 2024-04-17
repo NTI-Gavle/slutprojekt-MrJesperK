@@ -2,30 +2,39 @@
 session_start();
 require '../db_shenanigans/dbconn.php';
 require '../db_shenanigans/thing.php';
+$category = "";
+if (isset($_GET['c'])){
+$category = $_GET['c'];
+} else {
+  
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
-  // Sanitize the input to prevent SQL injection
   $search = '%' . $_POST['search'] . '%';
 
-  // Prepare the statement with a placeholder for the search term
   $searchStmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts WHERE title LIKE ? ORDER BY ID DESC");
 
-  // Bind the parameter
   $searchStmt->bindParam(1, $search, PDO::PARAM_STR);
 
-  // Execute the statement
   $searchStmt->execute();
 
-  // Fetch the results
   $posts = $searchStmt->fetchAll(PDO::FETCH_ASSOC);
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC");
   $stmt->execute();
   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
+if ($category == "" || $category == null){
   $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC");
   $stmt->execute();
   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+  $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts WHERE category = :category ORDER BY ID DESC");
+  $stmt->bindParam(':category', $category, PDO::PARAM_STR);
+  $stmt->execute();
+  $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+  
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -41,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt->execute();
       $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-      if ($user) {
+      if ($user && $user['isVerified'] == 'Y') {
         if (password_verify($password, $user['pass'])) {
           $_SESSION['username'] = $user['username'];
           $_SESSION['user_id'] = $user['ID'];
@@ -52,6 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
           $error = 'invalid username or password';
         }
+      } elseif ($user['isVerified'] == 'N') {
+        $error = 'account not verified';
       } else {
         $error = 'invalid username or password';
       }
@@ -85,12 +96,12 @@ $postId = $post_idRes['ID'];
 
 <body class="m-0 p-0 d-flex flex-column" style="width:100%; height:100vh;">
 
-  <Header class="container-fluid border-bottom text-center">
+  <Header class="container-fluid text-center mt-2" style="width:fit-content;">
     <a href="#" class="text-decoration-none ">
       <h2 class="text-black fw-bold">Only&#128405;Fans</h2>
     </a>
   </Header>
-  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
+  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom border-top mb-3">
     <div class="container-fluid">
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,23 +114,23 @@ $postId = $post_idRes['ID'];
               Categories
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#"><b>all Fans</b></a></li>
+              <li><a class="dropdown-item" href="index.php"><b>all Fans</b></a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="#">Tower Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=tower">Tower Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="#">Table Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=table">Table Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="#">Ceiling Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=ceiling">Ceiling Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="#">Handheld Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=handheld">Handheld Fans</a></li>
             </ul>
           </li>
           <li class="nav-item">
@@ -137,9 +148,9 @@ $postId = $post_idRes['ID'];
             if (isset($_SESSION['username'])) {
               if ($_SESSION['admin'] === 'Y') {
                 echo "<a href='admin.php' class='btn btn-warning'>Admin</a>";
-                echo "<li class='nav-item'><a class='btn' href='account.php?user=" . $_SESSION['user_id'] . "'>" . $_SESSION['username'] . "</a></li>";
+                echo "<li class='nav-item'><a class='btn' href='account.php?user=" . $_SESSION['user_id'] . "&p=saved'>" . $_SESSION['username'] . "</a></li>";
               } else {
-                echo "<a href='account.php?user=" . $_SESSION['username'] . "?id=" . $_SESSION['user_id'] . "'class='btn'>" . $_SESSION['username'] . "</a>";
+                echo "<a href='account.php?user=" . $_SESSION['username'] . "&p=saved' class='btn'>" . $_SESSION['username'] . "</a>";
               }
             } else {
               echo "<button class='nav-link btn' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
@@ -204,8 +215,8 @@ $postId = $post_idRes['ID'];
             <input type="text" name="username" id="username" placeholder="--Username--">
             <input type="password" name="password" id="password" placeholder="--Password--">
             <div class="container d-flex flex-row">
-              <p id="passLabel" style="margin-bottom:1.17rem;">Show password: </p>
-              <input class="mb-3 ms-2" type="checkbox" onclick="Shenanigans()">
+              <label for="showPass" id="passLabel" style="margin-bottom:1.17rem;">Show password: </label>             
+              <input id="showPass" class="mb-3 ms-2" type="checkbox" onclick="Shenanigans()">
             </div>
             <a href="register.php">No account?</a>
             <a href="passreset.php">Forgot password?</a>
@@ -221,7 +232,7 @@ $postId = $post_idRes['ID'];
       </div>
     </div>
   </div>
-
+  <h2 class="text-center m-auto mt-4 text-decoration-underline"><?php if (isset($_GET['c'])){echo $category." fans";}else{echo "All fans";} ?></h2>
   <div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
 
     <?php foreach ($posts as $post): ?>

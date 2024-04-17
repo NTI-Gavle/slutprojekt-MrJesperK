@@ -1,5 +1,7 @@
 <?php
 require '../db_shenanigans/dbconn.php';
+require '../vendor/autoload.php';
+use ReallySimpleJWT\Token;
 
 if ($_SERVER['REQUEST_METHOD'] == "POST"){
 if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['email'])){
@@ -26,8 +28,28 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['emai
             $insertStmt->bindParam(':password', $hashedPassword);
             $insertStmt->execute();
 
-            header("Location: index.php");
-            exit();
+            $payload = [
+                'iat' => time(),
+                'mail' => $email,
+                'exp' => time() + 300,
+                'iss' => 'localhost'
+            ];
+
+            $VSecret = 'Ty75qKCw3vuJUhHv*rxSw';
+
+            $VToken = Token::customPayload($payload, $VSecret);
+
+            $mail_content = '<!DOCTYPE html><body>';
+            $mail_content .= "<p>balls:</p> <a href='http://localhost:8080/projekt/slutprojekt-MrJesperK/pages/verify.php?t=$VToken'>alive yourslef</a>";
+            $mail_content .='</body></html>';
+            $headers = 'MIME-Version: 1.0' . "\r\n";
+            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+            mail($email, "Verify account creation or something", $mail_content, $headers);
+    
+            $_POST = array();
+            echo "<script>alert('A verification mail has been sent, you have 5 minutes to verify your account')</script>";
+
+            header('Location: index.php');
         }
     } catch(PDOException $e) {
         echo 'Connection failed: '.$e->getMessage()."<br />";

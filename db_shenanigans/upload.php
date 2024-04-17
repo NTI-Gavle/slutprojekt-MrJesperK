@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["title"])) {
         echo "Error uploading image!";
         header('Location: ../pages/index.php');
     }
-    if (isset($_POST['title']) && isset($_POST['description']) && !strlen($_POST["title"]) > 20 && !strlen($_POST['description']) > 150){
+    if (isset($_POST['title']) && isset($_POST['description']) && strlen($_POST["title"]) <= 20 && strlen($_POST['description']) <= 150){
 
         $title = htmlspecialchars($_POST['title']);
         $descr = htmlspecialchars($_POST['description']);
