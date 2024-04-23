@@ -140,7 +140,7 @@ $postId = $post_idRes['ID'];
           <h1 class="modal-title fs-5" id="ModalLabel">Create Post</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form action="../db_shenanigans/upload.php" id="postForm" method="post" enctype="multipart/form-data" onsubmit="return post(event)">
+        <form id="postForm" method="post" enctype="multipart/form-data" onsubmit="return post(event)">
           <div class="modal-body d-flex flex-column mb-3 gap-3">
             <input type="file" name="image" id="image" required>
             <input type="text" name="title" id="title" placeholder="--Title--" maxlength="20" required>

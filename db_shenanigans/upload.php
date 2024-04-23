@@ -21,58 +21,72 @@ $s3_client = new S3Client([
     ]
 ]);
 
-// Handle file upload
-    // Check if a file was uploaded
-    if (isset($_FILES["image"]) && $_FILES["image"]["error"] == UPLOAD_ERR_OK) {
-        // Get the uploaded file name
-        $filename = $_FILES["image"]["name"];
-        // Get the temporary file path
-        $tmpFilePath = $_FILES["image"]["tmp_name"];
-        
-        // Upload the file to Cloudflare R2 bucket
-        try {
-            $result = $s3_client->putObject([
-                'Bucket'     => $bucket_name,
-                'Key'        => $filename,
-                'SourceFile' => $tmpFilePath,
-                'ACL'        => 'public-read',
-            ]);
-            // Display success message
-            echo "Image uploaded successfully!";
-            header('Location: ../pages/index.php');
-        } catch (AwsException $e) {
-            // Handle AWS SDK exception
-            echo "Error uploading image: " . $e->getMessage();
-            header('Location: ../pages/index.php');
-        }
-    } else {
-        // Handle file upload error
-        echo "Error uploading image!";
-        header('Location: ../pages/index.php');
+$json_data = file_get_contents('php://input');
+$request = json_decode($json_data, true);
+
+$file_url = null;
+
+if (isset($_FILES["image"]) && $_FILES["image"]["error"] == UPLOAD_ERR_OK) {
+    $filename = $_FILES['image']['name'];
+    $tmpFilePath = $_FILES['image']['tmp_name'];
+
+    try {
+        // Upload the file to the Cloudflare R2 bucket
+        $result = $s3_client->putObject([
+            'Bucket'     => $bucket_name,
+            'Key'        => $filename,
+            'SourceFile' => $tmpFilePath,
+            'ACL'        => 'public-read',
+        ]);
+
+        // Retrieve the URL of the uploaded file
+        $file_url = $result['ObjectURL'];
+
+    } catch (Exception $e) {
+        // Output error message
+        echo "File upload error: " . $e->getMessage();
     }
+} else {
+    // Output error message for file upload
+    echo "File upload error: " . $_FILES["image"]["error"];
+}
 
+// Insert data into the database
+if ($file_url !== null) {
+    $title = htmlspecialchars($_POST['title']);
+    $descr = htmlspecialchars($_POST['description']);
+    $category = htmlspecialchars($_POST['category']);
+    $user = $_SESSION['username'];
+    $image = basename($file_url);
 
-    if (strlen($_POST["title"]) <= 20 && strlen($_POST["title"]) > 0  && strlen($_POST['description']) <= 150 && strlen($_POST['description']) > 0){
-
-        $json_data = file_get_contents('php://input');
-        $request = json_decode($json_data, true);
-
-        $title = htmlspecialchars($request['title']);
-        $descr = htmlspecialchars($request['description']);
-        $category = $request['category'];
-        $user = $_SESSION['username'];
-        $image = $request['image'];
-  
-            $stmt2 = $dbconn->prepare("INSERT INTO posts (title, description, created_by, created_at, category, image) VALUES (:title, :descr, :user, now(), :category, :image)");
-            $stmt2->bindParam(':title', $title);
-            $stmt2->bindParam(':descr', $descr);
-            $stmt2->bindParam(':user', $user);
-            $stmt2->bindParam(':image', $image);
-            $stmt2->bindParam(':category', $category);
-  
-            $stmt2->execute();
-  
-            echo "balls";
-  
-    }
-
+    // Prepare and execute the SQL statement
+    $stmt = $dbconn->prepare("INSERT INTO posts (title, description, created_by, created_at, category, image) VALUES (:title, :descr, :user, now(), :category, :image)");
+    $stmt->bindParam(':title', $title);
+    $stmt->bindParam(':descr', $descr);
+    $stmt->bindParam(':user', $user);
+    $stmt->bindParam(':image', $image);
+    $stmt->bindParam(':category', $category);
+    
+    $stmt->execute();
+}
+$thisID = $dbconn->lastInsertId();
+       echo "<a href='post.php?id=$thisID' 
+       class='card shadow-sm col border mb-5 p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0'
+       style='width: 18rem;'>
+       <img class='card-img-top' style='height: 14rem;' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />
+       <ul class='list-group list-group-flush'>
+       <h5 class='list-group-item'>
+       $title
+       </h5>
+       <li class='list-group-item'>
+       Likes: 0
+       </li>
+       <li class='list-group-item'>
+       Saves: 0
+       </li>
+       <li class='list-group-item'>
+       Created by: $_SESSION[username]
+       </li>
+       </ul>
+       </a>";
+       

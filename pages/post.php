@@ -337,7 +337,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <div class="modal-body text-center" id="replyBody<?php echo $Comment['ID']?>">
         <?php if(empty($replies)): ?>
-          <h3>
+          <h3 id="replyThing">
             No replies yet...
           </h3>
           <br>

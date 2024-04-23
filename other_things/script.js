@@ -141,6 +141,7 @@ function reply(event, comment_id) {
   // Get the reply input field and its value
   const replyInput = document.getElementById("replyText_"+comment_id);
   const replyValue = replyInput.value.trim();
+  const replyThing = document.getElementById("replyThing");
 
   // Check if the reply input is empty
   if (!replyValue) {
@@ -167,16 +168,12 @@ function reply(event, comment_id) {
   xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
           if (xhr.status === 200) {
-              // Success case
               console.log('Reply submitted successfully:', xhr.response);
               modalBody.insertAdjacentHTML("afterbegin", xhr.response);
+              replyThing.innerHTML = "";
               clearFormInputs(replyForm);
           } else {
-              // Error case
               console.error('Error submitting reply:', xhr.status, xhr.statusText, xhr.responseText);
-          }
-
-          // Re-enable the submit button
           enableSubmitButton(replyForm);
       }
   };
@@ -191,6 +188,7 @@ function reply(event, comment_id) {
 
   // Return false to prevent default form submission
   return false;
+}
 }
 
 function like(event, post_id){
@@ -254,41 +252,39 @@ return false;
 }
 
 let fileToUpload = "";
-function post(event){
+function post(event) {
   event.preventDefault();
 
-  const postList = document.getElementById("postList");
   const postForm = document.getElementById("postForm");
-  const title = document.getElementById("title").value.trim();
-  const description = document.getElementById("description").value.trim();
-  const category = document.getElementById("category").value;
-const image = fileToUpload;
+  const postList = document.getElementById("postList");
 
-  const request = {
-    image: image,
-    title: title,
-    description: description,
-    category: category
-  }
+  const formData = new FormData(postForm);
 
   const xhr = new XMLHttpRequest();
   const url = "../db_shenanigans/upload.php";
+
   xhr.open("POST", url);
 
-  xhr.onreadystatechange = function(){
-    if (xhr.status === 200){
-      console.log(xhr.response);
-      console.log(image);
-    } else {
-      console.log(xhr.status, xhr.statusText, xhr.responseText)
+  xhr.responseType = 'text';
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status === 200) {
+        console.log(xhr.response);
+        postList.insertAdjacentHTML("afterbegin", xhr.response)
+        
+      } else {
+        console.log(xhr.status, xhr.statusText, xhr.responseText);
+      }
+
+      clearFormInputs(postForm);
+      enableSubmitButton(postForm);
     }
-    clearFormInputs(postForm);
-    enableSubmitButton(postForm);
   };
 
   try {
-    xhr.send(JSON.stringify(request))
-  } catch (error){
+    xhr.send(formData);
+  } catch (error) {
     console.log(error);
   }
 
@@ -300,8 +296,9 @@ window.onload = function() {
 }
 
 const getFileName = (event) => {
-  const file = event.target.files;
-  const fileName = file[0].name;
-  console.log(fileName);
-  fileToUpload = fileName;
-}
+  const file = event.target.files[0];
+  if (file) {
+    const fileName = file.name;
+    console.log(fileName);
+  }
+};
