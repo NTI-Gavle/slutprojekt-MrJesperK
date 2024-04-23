@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         $stmt->bindParam(':text', $text);
         $stmt->execute();
 
-        header('Refresh: 0');
+        header("Refresh: 0");
     }
 
     if (isset($_POST['Delete'])){
@@ -66,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         $post_id = $_GET['id'];
 
         if (!isset($_SESSION['username'])){
-            header('Refresh: 0');
             echo "<script>alert('you must be signed in to like and/or save posts')</script>";
             die();
         }
@@ -90,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         $likeStmt->execute();
         }
 
-        header('Refresh: 0');
         
     }
 
@@ -99,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
       $post_id = $_GET['id'];
 
       if (!isset($_SESSION['username'])){
-          header('Refresh: 0');
           echo "<script>alert('you must be signed in to like and/or save posts')</script>";
           die();
       }
@@ -123,8 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
       $saveStmt->execute();
       }
 
-
-      header('Refresh: 0');
       
   }
     
@@ -149,7 +144,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<scr src="../other_things/script.js" defer></script>
+<script src="../other_things/script.js" defer></script>
 <link rel="stylesheet" href="../other_things/style.css">
 </head>
 <body class="p-0 m-0">
@@ -183,7 +178,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
 
         <li class="nav-item">
           <?php if (!isset($_SESSION['username'])){
-            echo "<a class='nav-link btn' href='index.php'>Login</a>";
+            echo "<a class='nav-link btn float-start' href='index.php'>Login</a>";
           } 
 
           ?>
@@ -269,7 +264,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
         <h1 class="modal-title fs-5" id="ModalLabel">Delete</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>    
-      <form  method="POST" action="">
+      <form method="POST">
       <?php if (isset($error)): ?>
         <p><?php echo $error; ?></p>
     <?php endif; ?>
@@ -297,25 +292,11 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     $fetchReplyStmt->bindParam(':comment_id', $Comment['ID'], PDO::PARAM_INT);
     $fetchReplyStmt->execute();
     $replies = $fetchReplyStmt->fetchAll(PDO::FETCH_ASSOC);  
-
-    $commentToReplyTo = $Comment['ID'];
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['username'])){
-      if (isset($_POST[$commentToReplyTo])){
-        try{
-      $reply = htmlspecialchars($_POST[$commentToReplyTo]);
-
-      $replyStmt = $dbconn->prepare("INSERT INTO replies (comment_id, reply_text, created_by, created_at) VALUES (:comment_id, :reply_text, :created_by, now())");
-      $replyStmt->bindParam(':comment_id', $commentToReplyTo, PDO::PARAM_INT);
-      $replyStmt->bindParam(':reply_text', $reply, PDO::PARAM_STR);
-      $replyStmt->bindParam(':created_by', $_SESSION['username'], PDO::PARAM_STR);
-      $replyStmt->execute();
-
-        } catch(PDOException $e) {
-          echo $e;
-        }
-      }
-    }
+    
+    $commentIdForThing = strval($Comment['ID']);
+        
+    
+  
   ?>
   <div class="card m-3 p-0 shadow-sm" id="<?php echo $Comment['ID'] ?>">
   <div class="card-header">
@@ -327,7 +308,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     <span class='float-end'>$createdAt</span>
     </p>";
     } else {
-      echo "<p class='m-0'><span class='fw-bold'>$createdBy</span> <span class='text-secondary'>(you)</span><span class='float-end text-secondary'>$createdAt</span></p>";
+      echo "<p class='m-0'><span class='fw-bold'>$createdBy</span> <span class='text-secondary'>(this is you)</span><span class='float-end text-secondary'>$createdAt</span></p>";
     }
     ?>
   </div>
@@ -351,16 +332,27 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="modal-dialog modal-fullscreen">
   <div class="modal-content">
     <div class="modal-header">
-      <h1 class="modal-title"><?php echo $Comment['CommentText']?></h1>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <h1 class="modal-title text-decoration-underline m-auto">Replies to <?php echo $Comment['created_by']?></h1>
+      <button type="button" class="btn-close float-end m-0" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
-    <div class="modal-body text-center">
-        <h2 class="text-center text-decoration-underline">Replies</h2>
+    <div class="modal-body text-center" id="replyBody<?php echo $Comment['ID']?>">
+        <?php if(empty($replies)): ?>
+          <h3>
+            No replies yet...
+          </h3>
+          <br>
+          <div>
+          </div>
+          <?php endif; ?>
           <?php foreach($replies as $reply): ?>
-            
+       
              <div class="card mb-5 m-auto shadow w-25 phoneReplyBox">
               <div class="card-body p-0 m-0">
-                <p class="card-title p-3"><span class="float-start fw-bold"><?php echo $reply['created_by']?></span><span class="float-end text-secondary"><?php echo $reply['created_at']?></span></p>
+                <?php if (!isset($_SESSION['username']) || $reply['created_by'] != $_SESSION['username']): ?>
+                <p class="card-title p-3"><a href="user.php?u=<?php echo $reply['created_by']?>" class="float-start fw-bold replyPhoneName"><?php echo $reply['created_by']?></a><span class="float-end text-secondary"><?php echo $reply['created_at']?></span></p>
+                <?php else: ?>
+                  <p class="card-title p-3"><span class="float-start fw-bold replyPhoneName"><?php echo $reply['created_by']?></span><span class="float-end text-secondary"><?php echo $reply['created_at']?></span></p>
+                  <?php endif?>
                 <hr>
                 <p class="card-text mb-4 text-center ps-2 pe-2 phoneReplyText"><?php echo $reply['reply_text']?></p>
              </div>
@@ -369,10 +361,15 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
           <?php endforeach ?>
       </div>
       <div class="modal-footer">
-        <form method="POST" class="w-100 text-center">
-          <input class="rounded-pill border border-secondary p-2 w-75" type="text" name="<?php echo $commentToReplyTo ?>" id="<?php echo $commentToReplyTo ?>" placeholder="reply">
-          <input class="btn btn-primary" type="submit" value="Reply">
+        <?php if(isset($_SESSION['username'])): ?>
+        <form method="POST" class="w-100 text-center" id="replyForm_<?php echo $Comment['ID']; ?>" onsubmit="return reply(event, <?php echo $Comment['ID']?>)">
+          <input class="rounded-pill border border-secondary p-2 w-75" type="text" id="replyText_<?php echo $Comment['ID']?>" name="reply_<?php echo $Comment['ID']?>" placeholder="reply">
+          <input type="hidden" name="comment_id" value="<?php echo $Comment['ID']?>">
+          <button class="btn btn-primary" type="submit">Reply</button>
         </form>
+        <?php else: ?>
+          <h4 class="m-auto">You must be logged in to reply</h4>
+        <?php endif ?>
       </div>
   </div>
 </div>

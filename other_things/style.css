@@ -8,11 +8,15 @@
     .phoneReplyBox{
         width:75% !important;
     }
-}
 
-@media only screen and (max-width:900px){
     .phoneReplyText{
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
+    }
+
+    .replyPhoneName{
+        position:relative;
+        text-align: center;
+        margin: auto;
     }
 }

@@ -37,41 +37,7 @@ if ($category == "" || $category == null){
   
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  if (isset($_POST['username']) && isset($_POST['password'])) {
 
-
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-
-    try {
-      $stmt = $dbconn->prepare("SELECT * FROM users WHERE username = :username");
-      $stmt->bindParam(':username', $username);
-      $stmt->execute();
-      $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-      if ($user && $user['isVerified'] == 'Y') {
-        if (password_verify($password, $user['pass'])) {
-          $_SESSION['username'] = $user['username'];
-          $_SESSION['user_id'] = $user['ID'];
-          $_SESSION['admin'] = $user['admin'];
-
-
-          // exit();
-        } else {
-          $error = 'invalid username or password';
-        }
-      } elseif ($user['isVerified'] == 'N') {
-        $error = 'account not verified';
-      } else {
-        $error = 'invalid username or password';
-      }
-    } catch (PDOException $e) {
-      echo 'Connection failed: ' . $e->getMessage() . "<br />";
-    }
-  }
-
-}
 $post_id = $dbconn->prepare("SELECT ID FROM posts");
 $post_id->execute();
 $post_idRes = $post_id->fetch(PDO::FETCH_ASSOC);
@@ -108,7 +74,7 @@ $postId = $post_idRes['ID'];
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="listToUpdate">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Categories
@@ -153,12 +119,12 @@ $postId = $post_idRes['ID'];
                 echo "<a href='account.php?user=" . $_SESSION['username'] . "&p=saved' class='btn'>" . $_SESSION['username'] . "</a>";
               }
             } else {
-              echo "<button class='nav-link btn' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
+              echo "<button class='nav-link btn float-start' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
             }
             ?>
           </li>
         </ul>
-        <form class="d-flex" role="search" id="searchForm" onsubmit="return searching(event)" method="post">
+        <form class="d-flex phoneSearch" role="search" id="searchForm" onsubmit="return searching(event)" method="post">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
@@ -174,7 +140,7 @@ $postId = $post_idRes['ID'];
           <h1 class="modal-title fs-5" id="ModalLabel">Create Post</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form action="../db_shenanigans/upload.php" method="post" enctype="multipart/form-data">
+        <form action="../db_shenanigans/upload.php" id="postForm" method="post" enctype="multipart/form-data" onsubmit="return post(event)">
           <div class="modal-body d-flex flex-column mb-3 gap-3">
             <input type="file" name="image" id="image" required>
             <input type="text" name="title" id="title" placeholder="--Title--" maxlength="20" required>
@@ -191,7 +157,7 @@ $postId = $post_idRes['ID'];
           <div class="modal-footer">
             <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <input type="submit" class="btn btn-primary" value="Post" name="Post" id="Post"></input>
+            <button type="submit" class="btn btn-primary" name="Post" id="Post">Post</button>
           </div>
         </form>
       </div>
@@ -205,12 +171,8 @@ $postId = $post_idRes['ID'];
           <h1 class="modal-title fs-5" id="ModalLabel">Login</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form method="POST" action="index.php">
-          <?php if (isset($error)): ?>
-            <p>
-              <?php echo $error; ?>
-            </p>
-          <?php endif; ?>
+        <form method="POST" id="login" onsubmit="return login(event)">
+        <p id="error" class="fw-bold text-danger text-center m-0 mt-3"></p>
           <div class="modal-body d-flex flex-column mb-3 gap-3">
             <input type="text" name="username" id="username" placeholder="--Username--">
             <input type="password" name="password" id="password" placeholder="--Password--">
@@ -225,15 +187,21 @@ $postId = $post_idRes['ID'];
           <div class="modal-footer">
             <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <input type="submit" class="btn btn-primary" name="Login" value="Login" id="thing"
-              onclick="loginFormStuff()"></input>
+            <button type="submit" class="btn btn-primary" name="Login" id="thing">Login</button>
           </div>
         </form>
       </div>
     </div>
   </div>
   <h2 class="text-center m-auto mt-4 text-decoration-underline"><?php if (isset($_GET['c'])){echo $category." fans";}else{echo "All fans";} ?></h2>
-  <div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
+
+  <h3 class="mt-4 text-center">
+    <?php if (empty($posts)): ?>
+        Nothing to see here
+    <?php endif; ?>
+  </h3>
+
+  <div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;" id="postList">
 
     <?php foreach ($posts as $post): ?>
 

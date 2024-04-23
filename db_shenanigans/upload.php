@@ -22,7 +22,6 @@ $s3_client = new S3Client([
 ]);
 
 // Handle file upload
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["title"])) {
     // Check if a file was uploaded
     if (isset($_FILES["image"]) && $_FILES["image"]["error"] == UPLOAD_ERR_OK) {
         // Get the uploaded file name
@@ -51,13 +50,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["title"])) {
         echo "Error uploading image!";
         header('Location: ../pages/index.php');
     }
-    if (isset($_POST['title']) && isset($_POST['description']) && strlen($_POST["title"]) <= 20 && strlen($_POST['description']) <= 150){
 
-        $title = htmlspecialchars($_POST['title']);
-        $descr = htmlspecialchars($_POST['description']);
-        $category = $_POST['category'];
+
+    if (strlen($_POST["title"]) <= 20 && strlen($_POST["title"]) > 0  && strlen($_POST['description']) <= 150 && strlen($_POST['description']) > 0){
+
+        $json_data = file_get_contents('php://input');
+        $request = json_decode($json_data, true);
+
+        $title = htmlspecialchars($request['title']);
+        $descr = htmlspecialchars($request['description']);
+        $category = $request['category'];
         $user = $_SESSION['username'];
-        $image = $filename;
+        $image = $request['image'];
   
             $stmt2 = $dbconn->prepare("INSERT INTO posts (title, description, created_by, created_at, category, image) VALUES (:title, :descr, :user, now(), :category, :image)");
             $stmt2->bindParam(':title', $title);
@@ -68,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["title"])) {
   
             $stmt2->execute();
   
-            header('Location: ../pages/index.php');
+            echo "balls";
   
     }
-}
+
