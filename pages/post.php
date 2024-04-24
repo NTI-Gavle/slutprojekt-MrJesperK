@@ -33,17 +33,8 @@ $post_data = $stmt->fetch(PDO::FETCH_ASSOC);
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     if (isset($_POST['commentText'])){
 
-        $postID = $_GET['id'];
-        $user = $_SESSION['username'];
-        $text = htmlspecialchars($_POST['commentText']);
+        
 
-        $stmt = $dbconn->prepare("INSERT INTO comments (postID, created_by, CommentText, created_at) VALUES (:postID, :user, :text, now())");
-        $stmt->bindParam(':postID', $postID);
-        $stmt->bindParam(':user', $user);
-        $stmt->bindParam(':text', $text);
-        $stmt->execute();
-
-        header("Refresh: 0");
     }
 
     if (isset($_POST['Delete'])){
@@ -243,7 +234,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
         <h1 class="modal-title fs-5" id="ModalLabel"><?php echo $post_data['title']; ?></h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form action="" method="post">
+      <form action="" method="post" id="commentForm" onsubmit="return comment(event, <?php echo $_GET['id']?>)">
       <div class="modal-body d-flex flex-column mb-3 gap-3">
         <textarea name="commentText" id="commentText" cols="20" rows="10" placeholder="Comment" maxlength="200" style="resize:none";></textarea>
       </div>
@@ -281,8 +272,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
   </div>
 </div>
-
-
+<div id="commentList">
     <h2 class="text-center m-3">Comments</h2>
 <?php foreach ($Comments as $Comment): ?>
   <?php
@@ -298,6 +288,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     
   
   ?>
+  
   <div class="card m-3 p-0 shadow-sm" id="<?php echo $Comment['ID'] ?>">
   <div class="card-header">
     <?php 
@@ -326,6 +317,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
 </ul>
   </div>
 </div>
+
 
 <!-- Modal with replies -->
 <div class="modal fade" id="replyModal<?php echo $Comment['ID']?>" tabindex="-1" aria-labelledby="replyModal" aria-hidden="true">
@@ -375,5 +367,6 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 </div>
 <?php endforeach; ?>
+</div>
 </body>
 </html>

@@ -127,14 +127,12 @@ function enableSubmitButton(form) {
 function reply(event, comment_id) {
   // thank you mr. ChatGPT!
   event.preventDefault();
-  console.log("Function reply called");
 
   const modalBody = document.getElementById("replyBody" + comment_id);
 
   // Retrieve the reply form element
   const replyForm = document.getElementById("replyForm_" + comment_id);
   if (!replyForm) {
-      console.error("Form element not found");
       return false;
   }
 
@@ -145,7 +143,6 @@ function reply(event, comment_id) {
 
   // Check if the reply input is empty
   if (!replyValue) {
-      console.log("Reply is empty");
       return false;
   }
 
@@ -163,19 +160,15 @@ function reply(event, comment_id) {
   // Set the request header
   xhr.setRequestHeader("Content-Type", "application/json");
 
-
   // Handle the response
   xhr.onreadystatechange = function() {
-      if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
+          if (xhr.readyState==4) {
               console.log('Reply submitted successfully:', xhr.response);
               modalBody.insertAdjacentHTML("afterbegin", xhr.response);
               replyThing.innerHTML = "";
               clearFormInputs(replyForm);
-          } else {
-              console.error('Error submitting reply:', xhr.status, xhr.statusText, xhr.responseText);
-          enableSubmitButton(replyForm);
-      }
+              enableSubmitButton(replyForm);
+          }
   };
 
   // Send the request
@@ -186,10 +179,9 @@ function reply(event, comment_id) {
       console.error("Failed to send the request:", error);
   }
 
-  // Return false to prevent default form submission
   return false;
 }
-}
+
 
 function like(event, post_id){
   event.preventDefault();
@@ -302,3 +294,43 @@ const getFileName = (event) => {
     console.log(fileName);
   }
 };
+
+function comment(event, id){
+  event.preventDefault();
+  const form = document.getElementById("commentForm");
+  const list = document.getElementById("commentList")
+  const CText = document.getElementById("commentText").value;
+
+const request = {
+  text: CText,
+  id: id
+};
+
+  const xhr = new XMLHttpRequest();
+  const url = "../db_shenanigans/comment.php";
+
+  xhr.open("POST", url);
+  xhr.responseType = 'text';
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === XMLHttpRequest.DONE){
+      if (xhr.status === 200){
+        console.log(xhr.response);
+        list.insertAdjacentHTML("afterbegin", xhr.response);
+      } else {
+        console.log(xhr.status, xhr.statusText, xhr.responseText);
+      }
+
+      clearFormInputs(form);
+      enableSubmitButton(form);
+    }
+  };
+
+  try {
+    xhr.send(JSON.stringify(request));
+  } catch(e) {
+    console.log(e)
+  }
+
+  return false;
+}
