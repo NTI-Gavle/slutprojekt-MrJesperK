@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])){
         $payload = [
             'iat' => time(),
             'uid' => $user_id['ID'],
-            'exp' => time() + 300,
+            'exp' => time() + 900,
             'iss' => 'localhost'
         ];
         

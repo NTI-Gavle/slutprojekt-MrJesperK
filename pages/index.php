@@ -3,34 +3,46 @@ session_start();
 require '../db_shenanigans/dbconn.php';
 require '../db_shenanigans/thing.php';
 $category = "";
+$url = htmlspecialchars("index.php?page=");
 if (isset($_GET['c'])){
 $category = $_GET['c'];
+} 
+if (isset($_GET['page'])){
+  $page = htmlspecialchars($_GET['page']);
 } else {
-  
+  header('Location: index.php?page=1');
 }
+
+$offsetHelp = $page-1;
+
+$offset = 20 * $offsetHelp;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
   $search = '%' . $_POST['search'] . '%';
 
-  $searchStmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts WHERE title LIKE ? ORDER BY ID DESC");
+  $searchStmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts WHERE title LIKE ? ORDER BY ID DESC LIMIT 20 OFFSET :offset");
 
   $searchStmt->bindParam(1, $search, PDO::PARAM_STR);
+  $searchStmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 
   $searchStmt->execute();
 
   $posts = $searchStmt->fetchAll(PDO::FETCH_ASSOC);
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC");
+  $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC LIMIT 20 OFFSET :offset");
+  $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
   $stmt->execute();
   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
 if ($category == "" || $category == null){
-  $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC");
+  $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC LIMIT 20 OFFSET :offset");
+  $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
   $stmt->execute();
   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
-  $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts WHERE category = :category ORDER BY ID DESC");
+  $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts WHERE category = :category ORDER BY ID DESC LIMIT 20 OFFSET :offset");
   $stmt->bindParam(':category', $category, PDO::PARAM_STR);
+  $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
   $stmt->execute();
   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -247,10 +259,31 @@ $postId = $post_idRes['ID'];
   </div> -->
       </a>
     <?php endforeach; ?>
+
+
+
   </div>
 
+  <nav aria-label="Page navigation example" class="m-auto mt-4">
+  <ul class="pagination">
+    <li class="page-item">
+      <a class="page-link" href="<?php if ($page >1){echo "$url".$page-1; } ?>" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li class="page-item"><a class="page-link" href="index.php?page=1">1</a></li>
+    <li class="page-item"><a class="page-link" href="index.php?page=2">2</a></li>
+    <li class="page-item"><a class="page-link" href="index.php?page=<?php if ($page <3){echo "3";} else {echo $page+1;}?>"><?php if ($page <3){echo "3";} else {echo $page+1;}?></a></li>
+    <li class="page-item">
+      <a class="page-link" href="<?php if (!empty($posts)){ echo "$url".$page+1; }  ?>" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+
   <footer class="container-fluid bg-body-tertiary border-top border-black mt-5 position-relative bottom-0">
-    <h1 class="text-center align-middle fw-bold text-decoration-underline">&copy;BALLS</h1>
+    <h1 class="text-center align-middle fw-bold text-decoration-underline">&copy;<a href="me.php" class="text-decoration-none text-black">This guy</a></h1>
   </footer>
 
 </body>

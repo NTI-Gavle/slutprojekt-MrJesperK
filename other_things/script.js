@@ -183,14 +183,56 @@ function reply(event, comment_id) {
 }
 
 
-function like(event, post_id){
-  event.preventDefault();
-  const likeButton = document.getElementById("likeButton_"+post_id);
+function likePost(e, post_id){
+  console.log("literally anything");
+  e.preventDefault();
+  const likeButton = document.getElementById("likeButton"+post_id);
+  const likeIcon = document.getElementById("like");
+  const form = document.getElementById("likeForm");
+
+  const request = {
+    id: post_id,
+  };
+
+  const xhr = new XMLHttpRequest();
+  const url = "../db_shenanigans/like.php";
+
+  xhr.open("POST", url);
+  xhr.setRequestHeader("Content-Type", "application/json");
   
+  xhr.onreadystatechange = function(){
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      const response = xhr.response;
+      likeButton.innerHTML = response;
+      console.log(response);
+      const isLiked = response.includes("bi-heart-fill");
+      console.log("aaa_"+isLiked);
+      saveLikedState(post_id, isLiked);
+      updateLikeButtonAppearance(likeButton, isLiked);
+      
+    } else {
+      console.log(xhr.status, xhr.statusText, xhr.responseText);
+    }
+    enableSubmitButton(form);
+  } 
+
+  try {
+  xhr.send(JSON.stringify(request));
+  } catch (error){
+    console.log("error: ", error)
+  }
 
   return false;
 }
 
+function updateLikeButtonAppearance(button, isLiked)
+{
+  if (isLiked){
+    button.classList.add("liked");
+  } else {
+    button.classList.remove("liked");
+  }
+}
 function login(event){
 event.preventDefault();
 
@@ -334,3 +376,38 @@ const request = {
 
   return false;
 }
+
+function saveLikedState(postId, state) {
+  console.log("save");
+  localStorage.setItem(postId, state+"_"+postId);
+}
+
+function loadLikedState(postId) {
+  console.log(localStorage.getItem(`liked_${postId}`));
+  return localStorage.getItem(`liked_${postId}`);
+}
+
+
+window.addEventListener('load', function() {
+const currentUrl = window.location.href;
+console.log("1");
+const url = new URL(currentUrl);
+console.log("2");
+const searchParams = url.searchParams;
+console.log("3");
+const postId = searchParams.get('id');
+console.log("4");
+  const likedState = loadLikedState(postId);
+  console.log("5_"+likedState);
+  const iconElement = document.getElementById("likeButton"+postId);
+  console.log("6");
+  if (likedState) {
+      // Update the DOM based on the saved state
+      if (likedState === 'true') {
+          iconElement.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-heart-fill' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314'/></svg>";
+      } else {  
+          iconElement.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-heart' viewBox='0 0 16 16'><path d='m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15'/></svg>";
+      }
+  }
+  console.log("7");
+});

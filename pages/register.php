@@ -31,7 +31,7 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['emai
             $payload = [
                 'iat' => time(),
                 'mail' => $email,
-                'exp' => time() + 300,
+                'exp' => time() + 900,
                 'iss' => 'localhost'
             ];
 

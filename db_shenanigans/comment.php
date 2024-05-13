@@ -18,7 +18,7 @@ if ($request && isset($request['id']) && isset($request['text'])) {
 
         $thisID = $dbconn->lastInsertId();
         $time = date("Y-m-d h:i:s");
-        echo "<div class='card m-3 p-0 shadow-sm' id='$thisID'>
+        echo /*html*/"<div class='card m-3 p-0 shadow-sm' id='$thisID'>
         <div class='card-header'>
             <p class='m-0'><span class='fw-bold'>$_SESSION[username]</span> <span class='text-secondary'>(this is you)</span><span class='float-end text-secondary'>$time</span></p>
              </div>
@@ -42,3 +42,4 @@ if ($request && isset($request['id']) && isset($request['text'])) {
 } else {
     echo "Invalid request data";
 }
+
