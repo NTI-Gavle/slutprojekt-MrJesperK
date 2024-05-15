@@ -50,7 +50,9 @@ if (isset($_FILES["image"]) && $_FILES["image"]["error"] == UPLOAD_ERR_OK) {
     // Output error message for file upload
     echo "File upload error: " . $_FILES["image"]["error"];
 }
-
+if (isset($_SESSION['last_submit']) && ((time() - $_SESSION['last_submit']) < 60 * 5)) {
+    die();
+} else {
 // Insert data into the database
 if ($file_url !== null) {
     $title = htmlspecialchars($_POST['title']);
@@ -68,8 +70,14 @@ if ($file_url !== null) {
     $stmt->bindParam(':category', $category);
     
     $stmt->execute();
+    $_SESSION['last_submit'] = time();
+    $success = true;
 }
+}
+
 $thisID = $dbconn->lastInsertId();
+
+if ($success == true) {
        echo "<a href='post.php?id=$thisID' 
        class='card shadow-sm col border mb-5 p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0'
        style='width: 18rem;'>
@@ -89,4 +97,9 @@ $thisID = $dbconn->lastInsertId();
        </li>
        </ul>
        </a>";
-       
+       $success = false;
+       die();
+} else {
+    $success = false;
+    die();
+}

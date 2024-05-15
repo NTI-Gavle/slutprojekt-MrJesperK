@@ -8,6 +8,9 @@ if (isset($_GET['c'])){
 $category = $_GET['c'];
 } 
 if (isset($_GET['page'])){
+  if ($_GET['page'] <= 0 || !is_numeric($_GET['page'])){
+    header("Location: index.php?page=1");
+  }
   $page = htmlspecialchars($_GET['page']);
 } else {
   header('Location: index.php?page=1');
@@ -140,6 +143,7 @@ $postId = $post_idRes['ID'];
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
+
       </div>
     </div>
   </nav>
@@ -176,7 +180,7 @@ $postId = $post_idRes['ID'];
     </div>
   </div>
 
-  <div class="modal fade" id="LoginModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
+  <div class="modal fade" id="LoginModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="<?php if (isset($_SESSION['username'])){ echo "true"; } else {echo "true";}?>">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
@@ -264,15 +268,15 @@ $postId = $post_idRes['ID'];
 
   </div>
 
-  <nav aria-label="Page navigation example" class="m-auto mt-4">
+  <nav class="m-auto mt-4">
   <ul class="pagination">
     <li class="page-item">
       <a class="page-link" href="<?php if ($page >1){echo "$url".$page-1; } ?>" aria-label="Previous">
         <span aria-hidden="true">&laquo;</span>
       </a>
     </li>
-    <li class="page-item"><a class="page-link" href="index.php?page=1">1</a></li>
-    <li class="page-item"><a class="page-link" href="index.php?page=2">2</a></li>
+    <li class="page-item"><a class="page-link" href="index.php?page=<?php if ($page > 2){echo $page-1;}else{echo "1";}?>"><?php if ($page > 2){echo $page-1;}else{echo "1";}?></a></li>
+    <li class="page-item"><a class="page-link" href="index.php?page=<?php if ($page > 2){echo $page;}else{echo "2";}?>"><?php if ($page > 2){echo $page;}else{echo "2";}?></a></li>
     <li class="page-item"><a class="page-link" href="index.php?page=<?php if ($page <3){echo "3";} else {echo $page+1;}?>"><?php if ($page <3){echo "3";} else {echo $page+1;}?></a></li>
     <li class="page-item">
       <a class="page-link" href="<?php if (!empty($posts)){ echo "$url".$page+1; }  ?>" aria-label="Next">
@@ -280,10 +284,15 @@ $postId = $post_idRes['ID'];
       </a>
     </li>
   </ul>
+  <?php if ($page != 1):?>
+  <ul class="pagination">
+    <li class="page-item m-auto"><a class="page-link" href="index.php?page=1">To start</a></li>
+  </ul>
+    <?php endif; ?>
 </nav>
 
   <footer class="container-fluid bg-body-tertiary border-top border-black mt-5 position-relative bottom-0">
-    <h1 class="text-center align-middle fw-bold text-decoration-underline">&copy;<a href="me.php" class="text-decoration-none text-black">This guy</a></h1>
+    <h3 class="text-center align-middle text-decoration-underline">&copy;: 2024-<?php echo date("Y");?></h3>
   </footer>
 
 </body>
