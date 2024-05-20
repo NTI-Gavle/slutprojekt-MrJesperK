@@ -47,69 +47,66 @@ $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="../other_things/script.js"></script>
 </head>
 <body>
-<Header class="container-fluid border-bottom text-center">
-        <a href="index.php" class="text-decoration-none "><h2 class="text-black fw-bold">Only&#128405;Fans</h2></a>
-    </Header>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
-  <div class="container-fluid">
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Categories
-          </a>
-          <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="index.php"><b>all Fans</b></a></li>
+<Header class="container-fluid text-center mt-2" style="width:fit-content;">
+    <a href="index.php?c=all&page=1" class="text-decoration-none ">
+      <h2 class="text-black fw-bold">Only&#128405;Fans</h2>
+    </a>
+  </Header>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom border-top mb-3">
+    <div class="container-fluid">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="listToUpdate">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Categories
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="index.php?c=all&page=1"><b>all Fans</b></a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=tower">Tower Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=tower&page=1">Tower Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=table">Table Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=table&page=1">Table Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=ceiling">Ceiling Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=ceiling&page=1">Ceiling Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=handheld">Handheld Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=handheld&page=1">Handheld Fans</a></li>
             </ul>
-        </li>
-
-        <li class="nav-item">
-          <?php if (!isset($_SESSION['username'])){
-            echo "<button class='nav-link btn' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
-          } 
-          else {
-            echo "";
-          }
-          ?>
-        </li>
-        <li class="nav-item">
-          <?php
-        if (isset($_SESSION['username'])){
-          if ($_SESSION['admin'] === 'Y')
-              echo "<a href='admin.php' class='btn btn-warning'>Admin</a>";
+          </li>
+          <li class="nav-item">
+            <?php
+            if (isset($_SESSION['username'])) {
+              if ($_SESSION['admin'] === 'Y') {
+                echo "<a href='admin.php' class='btn btn-warning'>Admin</a>";
+                echo "<li class='nav-item'><a class='btn' href='account.php?user=" . $_SESSION['user_id'] . "&p=saved'>" . $_SESSION['username'] . "</a></li>";
+              } else {
+                echo "<a href='account.php?p=saved' class='btn'>" . $_SESSION['username'] . "</a>";
+              }
+            } else {
+              echo "<button class='nav-link btn float-start' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
             }
-            
             ?>
-        </li>
-        <li class="nav-item">
-        </li>
-      </ul>
-      <form class="d-flex" role="search">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Search</button>
-      </form>
+          </li>
+        </ul>
+        <form class="d-flex phoneSearch" role="search" id="searchForm" onsubmit="return searching(event)" method="post">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
 
 <form method='post' name='logoutForm'><input type='submit' class='btn btn-warning ms-3' name='logout' value='logout'></input></form>
 <button class="btn btn-danger" data-bs-target="#DeleteUserModal" data-bs-toggle="modal" onclick="modal5()" >Delete Account</button>

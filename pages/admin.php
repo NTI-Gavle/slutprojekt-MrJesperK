@@ -94,8 +94,8 @@ $postId = $post_idRes['ID'];
 
 <body class="m-0 p-0 d-flex flex-column" style="width:100%; height:100vh;">
 
-  <Header class="container-fluid text-center mt-2" style="width:fit-content;">
-    <a href="#" class="text-decoration-none ">
+<Header class="container-fluid text-center mt-2" style="width:fit-content;">
+    <a href="index.php?c=all&page=1" class="text-decoration-none ">
       <h2 class="text-black fw-bold">Only&#128405;Fans</h2>
     </a>
   </Header>
@@ -106,40 +106,30 @@ $postId = $post_idRes['ID'];
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="listToUpdate">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Categories
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="index.php"><b>all Fans</b></a></li>
+              <li><a class="dropdown-item" href="index.php?c=all&page=1"><b>all Fans</b></a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=tower">Tower Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=tower&page=1">Tower Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=table">Table Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=table&page=1">Table Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=ceiling">Ceiling Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=ceiling&page=1">Ceiling Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=handheld">Handheld Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=handheld&page=1">Handheld Fans</a></li>
             </ul>
-          </li>
-          <li class="nav-item">
-            <?php
-            if (isset($_SESSION['username'])) {
-              echo "<button type='button' class='btn' id='modalInput1' data-bs-toggle='modal' data-bs-target='#PostModal' onclick='modal1()'>
-            New Post
-          </button>";
-            }
-
-            ?>
           </li>
           <li class="nav-item">
             <?php
@@ -148,18 +138,19 @@ $postId = $post_idRes['ID'];
                 echo "<a href='admin.php' class='btn btn-warning'>Admin</a>";
                 echo "<li class='nav-item'><a class='btn' href='account.php?user=" . $_SESSION['user_id'] . "&p=saved'>" . $_SESSION['username'] . "</a></li>";
               } else {
-                echo "<a href='account.php?user=" . $_SESSION['username'] . "&p=saved' class='btn'>" . $_SESSION['username'] . "</a>";
+                echo "<a href='account.php?p=saved' class='btn'>" . $_SESSION['username'] . "</a>";
               }
             } else {
-              echo "<button class='nav-link btn' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
+              echo "<button class='nav-link btn float-start' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
             }
             ?>
           </li>
         </ul>
-        <form class="d-flex" role="search" id="searchForm" onsubmit="return searching(event)" method="post">
+        <form class="d-flex phoneSearch" role="search" id="searchForm" onsubmit="return searching(event)" method="post">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
+
       </div>
     </div>
   </nav>

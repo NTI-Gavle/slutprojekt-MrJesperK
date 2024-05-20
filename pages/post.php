@@ -152,51 +152,67 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body class="p-0 m-0">
     
-<Header class="container-fluid border-bottom text-center">
-        <a href="index.php" class="text-decoration-none "><h2 class="text-black fw-bold">Only&#128405;Fans</h2></a>
-    </Header>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
-  <div class="container-fluid">
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Categories
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="index.php?category=All"><b>all Fans</b></a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="index.php?category=Tower">Tower Fans</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Table Fans</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Ceiling Fans</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Handheld Fans</a></li>
-          </ul>
-        </li>
-
-        <li class="nav-item">
-          <?php if (!isset($_SESSION['username'])){
-            echo "<a class='nav-link btn float-start' href='index.php'>Login</a>";
-          } 
-
-          ?>
-        </li>
-        <li class="nav-item">
-        <?php
-        if (isset($_SESSION['username'])){
-              echo "<a href='account.php?user=".$_SESSION['username']."'class='btn'>Account</a>";
-        }
+<Header class="container-fluid text-center mt-2" style="width:fit-content;">
+    <a href="index.php?c=all&page=1" class="text-decoration-none ">
+      <h2 class="text-black fw-bold">Only&#128405;Fans</h2>
+    </a>
+  </Header>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom border-top mb-3">
+    <div class="container-fluid">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="listToUpdate">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Categories
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="index.php?c=all&page=1"><b>all Fans</b></a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="index.php?c=tower&page=1">Tower Fans</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="index.php?c=table&page=1">Table Fans</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="index.php?c=ceiling&page=1">Ceiling Fans</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item" href="index.php?c=handheld&page=1">Handheld Fans</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <?php
+            if (isset($_SESSION['username'])) {
+              if ($_SESSION['admin'] === 'Y') {
+                echo "<a href='admin.php' class='btn btn-warning'>Admin</a>";
+                echo "<li class='nav-item'><a class='btn' href='account.php?user=" . $_SESSION['user_id'] . "&p=saved'>" . $_SESSION['username'] . "</a></li>";
+              } else {
+                echo "<a href='account.php?p=saved' class='btn'>" . $_SESSION['username'] . "</a>";
+              }
+            } else {
+              echo "<button class='nav-link btn float-start' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
+            }
             ?>
-        </li>
-      </ul>
+          </li>
+        </ul>
+        <form class="d-flex phoneSearch" role="search" id="searchForm" onsubmit="return searching(event)" method="post">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
+
 <div class="container d-flex justify-content-center text-center p-0 z-0">
 <?php $image = $post_data['image']; ?>
 <div class="card m-3" style="width: 50rem;">
@@ -205,7 +221,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     <p class="card-text"><?php echo $post_data['description']; ?></p>
   </div>
   <ul class="list-group list-group-flush text-start">
-    <li class="list-group-item"><strong>Created by: <?php if ($_SESSION['username'] != $post_data['created_by']){echo "<a class='text-decoration-none' href='user.php?u=$post_data[created_by]'>$post_data[created_by]</a>";}else{ echo $post_data['created_by'];} ?></strong></li>
+    <li class="list-group-item"><strong>Created by: <?php if ( !isset($_SESSION['username']) || $_SESSION['username'] != $post_data['created_by']){echo "<a class='text-decoration-none' href='user.php?u=$post_data[created_by]'>$post_data[created_by]</a>";}else{ echo $post_data['created_by'];} ?></strong></li>
     <li class="list-group-item"><strong class="text-body-secondary">Posted at: <?php echo $post_data['created_at']?></strong></li>
 
     <li class="list-group-item">
@@ -236,9 +252,12 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
  } ?>
 
  <?php
-     if (isset($_SESSION['username']) && $_SESSION['admin'] === 'Y' || $_SESSION['username'] == $post_data['created_by'] ){
+ if (!isset($_SESSION['username'])) {
+  echo "";
+}
+    elseif (isset($_SESSION['username']) && $_SESSION['admin'] === 'Y' || $_SESSION['username'] == $post_data['created_by'] ){
       echo "<li class='list-group-item'><button class='btn btn-danger' id='modalInput4' data-bs-toggle='modal' data-bs-target='#deleteModal' onclick='deleteModal()' style='top:1rem;'>Delete</button></li>";
-  }
+  } 
  ?>
   </ul>
 </div>
@@ -328,11 +347,6 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
   <div class="card-body m-0 ps-0 pe-0">
     <p class="card-text ps-3"><?php echo $Comment['CommentText'] ?></p>
     <ul class="list-group list-group-flush">
-    <li class="list-group-item">
-      <a href="#" class="btn btn-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
-  <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
-</svg></a>
-</li>
 <li class="list-group-item">
   <button type="button" class="btn btn-primary" id="replyModalInput" data-bs-toggle="modal" data-bs-target="#replyModal<?php echo $Comment['ID']?>">View replies</button>
 </li>

@@ -37,75 +37,67 @@
 </head>
 <body>
 
-<Header class="container-fluid border-bottom text-center">
-    <a href="index.php" class="text-decoration-none ">
+<Header class="container-fluid text-center mt-2" style="width:fit-content;">
+    <a href="index.php?c=all&page=1" class="text-decoration-none ">
       <h2 class="text-black fw-bold">Only&#128405;Fans</h2>
     </a>
   </Header>
-  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
+  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom border-top mb-3">
     <div class="container-fluid">
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="listToUpdate">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Categories
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#"><b>all Fans</b></a></li>
+              <li><a class="dropdown-item" href="index.php?c=all&page=1"><b>all Fans</b></a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="#">Tower Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=tower&page=1">Tower Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="#">Table Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=table&page=1">Table Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="#">Ceiling Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=ceiling&page=1">Ceiling Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="#">Handheld Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=handheld&page=1">Handheld Fans</a></li>
             </ul>
-          </li>
-          <li class="nav-item">
-            <?php
-            if (isset($_SESSION['username'])) {
-              echo "<button type='button' class='btn' id='modalInput1' data-bs-toggle='modal' data-bs-target='#PostModal' onclick='modal1()'>
-            New Post
-          </button>";
-            }
-
-            ?>
           </li>
           <li class="nav-item">
             <?php
             if (isset($_SESSION['username'])) {
               if ($_SESSION['admin'] === 'Y') {
                 echo "<a href='admin.php' class='btn btn-warning'>Admin</a>";
-                echo "<li class='nav-item'><a class='btn' href='account.php?user=" . $_SESSION['user_id'] . "'>" . $_SESSION['username'] . "</a></li>";
+                echo "<li class='nav-item'><a class='btn' href='account.php?user=" . $_SESSION['user_id'] . "&p=saved'>" . $_SESSION['username'] . "</a></li>";
               } else {
-                echo "<a href='account.php?user=" . $_SESSION['username'] . "?id=" . $_SESSION['user_id'] . "'class='btn'>" . $_SESSION['username'] . "</a>";
+                echo "<a href='account.php?p=saved' class='btn'>" . $_SESSION['username'] . "</a>";
               }
             } else {
-              echo "<button class='nav-link btn' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
+              echo "<button class='nav-link btn float-start' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
             }
             ?>
           </li>
         </ul>
-        <form class="d-flex" role="search" id="searchForm" onsubmit="return searching(event)" method="post">
+        <form class="d-flex phoneSearch" role="search" id="searchForm" onsubmit="return searching(event)" method="post">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
+
       </div>
     </div>
   </nav>
+
   <div class="dropdown-center text-center position-relative">
     <h3><?php echo $user."'s"?></h3>
   <button class="btn dropdown-toggle btn-lg border border-secondary shadow" type="button" data-bs-toggle="dropdown" aria-expanded="false">

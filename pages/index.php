@@ -87,7 +87,7 @@ $postId = $post_idRes['ID'];
 <body class="m-0 p-0 d-flex flex-column" style="width:100%; height:100vh;">
 
   <Header class="container-fluid text-center mt-2" style="width:fit-content;">
-    <a href="#" class="text-decoration-none ">
+    <a href="index.php?c=all&page=1" class="text-decoration-none ">
       <h2 class="text-black fw-bold">Only&#128405;Fans</h2>
     </a>
   </Header>
@@ -167,7 +167,7 @@ $postId = $post_idRes['ID'];
         </div>
         <form id="postForm" method="post" enctype="multipart/form-data" onsubmit="return post(event)">
           <div class="modal-body d-flex flex-column mb-3 gap-3">
-            <a href="tos.php" class="text-danger text-decoration-underline">BEFORE YOU POST</a>
+            <a href="tos.php" class="text-danger text-decoration-underline">READ BEFORE YOU POST</a>
             <input type="file" name="image" id="image" required>
             <input type="text" name="title" id="title" placeholder="--Title--" maxlength="20" required>
             <textarea name="description" id="description" cols="30" rows="4" placeholder="--description--"
@@ -302,9 +302,9 @@ $postId = $post_idRes['ID'];
 </nav>
 
   <footer class="container-fluid bg-body-tertiary border-top border-black mt-5 position-relative bottom-0">
-    <p class="ps-2">&copy;: 2024-<?php echo date("Y");?></p>
+    <p class="ps-2 pt-1">&copy;: 2024-<?php echo date("Y");?></p>
     <p class="ps-2">some random guy</p>
-    <a class="text-black m-0 ps-2" href="tos.php">Terms of service</a>
+    <a class="text-black m-0 ps-2 pb-1" href="tos.php">Terms of service</a>
   </footer>
 
 </body>
