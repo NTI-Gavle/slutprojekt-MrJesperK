@@ -21,11 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
     if (isset($_POST['Delete'])){
         $post = $_GET['id'];
-        $reason = $_POST['Reason'];
-
-        $Dstmt = $dbconn->prepare("INSERT INTO deleted (reason) VALUES (:reason)");
-        $Dstmt->bindParam(':reason', $reason);
-        $Dstmt->execute();
 
         $deleteStmt = $dbconn->prepare("DELETE FROM posts WHERE ID = :post");
         $deleteStmt->bindParam(':post', $post);
@@ -210,7 +205,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
     <p class="card-text"><?php echo $post_data['description']; ?></p>
   </div>
   <ul class="list-group list-group-flush text-start">
-    <li class="list-group-item"><strong>Created by: <?php echo $post_data['created_by'] ?></strong></li>
+    <li class="list-group-item"><strong>Created by: <?php if ($_SESSION['username'] != $post_data['created_by']){echo "<a class='text-decoration-none' href='user.php?u=$post_data[created_by]'>$post_data[created_by]</a>";}else{ echo $post_data['created_by'];} ?></strong></li>
     <li class="list-group-item"><strong class="text-body-secondary">Posted at: <?php echo $post_data['created_at']?></strong></li>
 
     <li class="list-group-item">
@@ -241,7 +236,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
  } ?>
 
  <?php
-     if (isset($_SESSION['username']) && $_SESSION['admin'] === 'Y'){
+     if (isset($_SESSION['username']) && $_SESSION['admin'] === 'Y' || $_SESSION['username'] == $post_data['created_by'] ){
       echo "<li class='list-group-item'><button class='btn btn-danger' id='modalInput4' data-bs-toggle='modal' data-bs-target='#deleteModal' onclick='deleteModal()' style='top:1rem;'>Delete</button></li>";
   }
  ?>
@@ -288,8 +283,7 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
         <p><?php echo $error; ?></p>
     <?php endif; ?>
       <div class="modal-body d-flex flex-column mb-3 gap-3">
-        <input type="text" name="Reason" id="Reason" placeholder="--Reason--">
-
+        <h3>Are you sure you want to delete this post?</h3>
       </div>
       <div class="modal-footer">
         <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">

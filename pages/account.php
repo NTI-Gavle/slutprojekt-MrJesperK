@@ -2,6 +2,9 @@
 require '../db_shenanigans/dbconn.php';
 require '../db_shenanigans/thing.php';
 
+if (!isset($_GET['p'])){
+  header("Location: account.php?p=saved");
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     if (isset($_POST['logout'])){
         session_destroy();
@@ -140,9 +143,9 @@ $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
     <?php echo $_GET['p']?>
   </button>
   <ul class="dropdown-menu text-center">   
-    <li><a class="dropdown-item" href="account.php?user=<?php echo $_SESSION['username']?>&p=<?php echo "saved"?>"">Saved</a></li>
+    <li><a class="dropdown-item" href="account.php?p=<?php echo "saved"?>"">Saved</a></li>
     <li class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="account.php?user=<?php echo $_SESSION['username']?>&p=<?php echo "liked"?>">Liked</a></li>
+    <li><a class="dropdown-item" href="account.php?p=<?php echo "liked"?>">Liked</a></li>
   </ul>
 </div>
 <h2 class="mt-4">

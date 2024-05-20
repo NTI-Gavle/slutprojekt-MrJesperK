@@ -2,7 +2,9 @@
  require '../db_shenanigans/dbconn.php';
 
  $user = $_GET['u'];
-
+ if (!isset($_GET['posts'])){
+  header('Location: user.php?u='.$user.'&posts=liked');
+}
  $fetchUserID = $dbconn->prepare("SELECT ID FROM users WHERE username = :username");
  $fetchUserID->bindParam(':username', $user, PDO::PARAM_STR);
  $fetchUserID->execute();
@@ -12,6 +14,11 @@
  $fetchUserLikesStmt->bindParam(':user', $user_id['ID'], PDO::PARAM_INT);
  $fetchUserLikesStmt->execute();
  $userLikedPosts = $fetchUserLikesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+ $fetchUserPostsStmt = $dbconn->prepare("SELECT * FROM posts WHERE created_by = :user");
+ $fetchUserPostsStmt->bindParam(':user', $user, PDO::PARAM_STR);
+ $fetchUserPostsStmt->execute();
+ $userPostedPosts = $fetchUserPostsStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -99,16 +106,27 @@
       </div>
     </div>
   </nav>
-  <h2 class="text-center text-decoration-underline"><?php echo $user ?>'s saved posts</h2>
+  <div class="dropdown-center text-center position-relative">
+    <h3><?php echo $user."'s"?></h3>
+  <button class="btn dropdown-toggle btn-lg border border-secondary shadow" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+  <?php echo $_GET['posts'] ?>
+  </button>
+  <h3>posts</h3>
+  <ul class="dropdown-menu text-center">   
+    <li><a class="dropdown-item" href="user.php?u=<?php echo $user?>&posts=liked">Liked</a></li>
+    <li class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="user.php?u=<?php echo $user?>&posts=posted">Posted</a></li>
+  </ul>
+</div>
 
   <h3 class="mt-4 text-center">
-    <?php if (empty($userLikedPosts)): ?>
+    <?php if (empty($userLikedPosts) || empty($userPostedPosts)): ?>
         Nothing to see here
     <?php endif; ?>
   </h3>
 
   <div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
-
+<?php if ($_GET['posts'] == 'liked'):?>
   <?php foreach($userLikedPosts as $post):?>
     <?php
       $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
@@ -147,11 +165,55 @@
             <?php echo $post['created_by'] ?>
           </li>
         </ul>
-        <!-- <div class="card-body">
-    <p class="card-title text-center"><?php echo $post['description']; ?></p>
-  </div> -->
+
       </a>
   <?php endforeach ?>
+  <?php endif; ?>
+  </div>
+  <div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
+<?php if ($_GET['posts'] == 'posted'):?>
+  <?php foreach($userPostedPosts as $post):?>
+    <?php
+      $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
+      $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
+      $likeCountStmt->execute();
+      $likeCount = $likeCountStmt->fetch(PDO::FETCH_ASSOC);
+
+      $saveCountStmt = $dbconn->prepare("SELECT COUNT(*) AS save_count FROM saves WHERE post_id = :postId");
+      $saveCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
+      $saveCountStmt->execute();
+      $saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
+      ?>
+    <a href="post.php?id=<?php echo $post['ID']; ?>"
+        class="card shadow-sm col border mb-5 p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0"
+        style="width: 18rem;">
+        <?php
+        if (isset($post['image'])) {
+          $image = $post['image'];
+          echo "<img class='card-img-top' style='height:14rem;' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
+        } else {
+          echo "<img src='../image/nedladdning.png' class='card-img-top' />";
+        }
+        ?>
+
+        <ul class="list-group list-group-flush">
+          <h5 class="list-group-item">
+            <?php echo $post['title']; ?>
+          </h5>
+          <li class="list-group-item">Likes:
+            <?php echo $likeCount['like_count'] ?>
+          </li>
+          <li class="list-group-item">Saves:
+            <?php echo $saveCount['save_count'] ?>
+          </li>
+          <li class="list-group-item text-body-secondary">Created by:
+            <?php echo $post['created_by'] ?>
+          </li>
+        </ul>
+
+      </a>
+  <?php endforeach ?>
+  <?php endif; ?>
   </div>
 </body>
 </html>

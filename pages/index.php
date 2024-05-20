@@ -6,7 +6,9 @@ $category = "";
 $url = htmlspecialchars("index.php?page=");
 if (isset($_GET['c'])){
 $category = $_GET['c'];
-} 
+} else {
+  header("Location: index.php?c=all&page=1");
+}
 if (isset($_GET['page'])){
   if ($_GET['page'] <= 0 || !is_numeric($_GET['page'])){
     header("Location: index.php?page=1");
@@ -43,11 +45,18 @@ if ($category == "" || $category == null){
   $stmt->execute();
   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
+  if($_GET['c'] != 'all'){
   $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts WHERE category = :category ORDER BY ID DESC LIMIT 20 OFFSET :offset");
   $stmt->bindParam(':category', $category, PDO::PARAM_STR);
   $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
   $stmt->execute();
   $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  } else {
+    $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC LIMIT 20 OFFSET :offset");
+  $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+  $stmt->execute();
+  $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
 }
   
 }
@@ -95,23 +104,23 @@ $postId = $post_idRes['ID'];
               Categories
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="index.php"><b>all Fans</b></a></li>
+              <li><a class="dropdown-item" href="index.php?c=all&page=1"><b>all Fans</b></a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=tower">Tower Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=tower&page=1">Tower Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=table">Table Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=table&page=1">Table Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=ceiling">Ceiling Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=ceiling&page=1">Ceiling Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=handheld">Handheld Fans</a></li>
+              <li><a class="dropdown-item" href="index.php?c=handheld&page=1">Handheld Fans</a></li>
             </ul>
           </li>
           <li class="nav-item">
@@ -131,7 +140,7 @@ $postId = $post_idRes['ID'];
                 echo "<a href='admin.php' class='btn btn-warning'>Admin</a>";
                 echo "<li class='nav-item'><a class='btn' href='account.php?user=" . $_SESSION['user_id'] . "&p=saved'>" . $_SESSION['username'] . "</a></li>";
               } else {
-                echo "<a href='account.php?user=" . $_SESSION['username'] . "&p=saved' class='btn'>" . $_SESSION['username'] . "</a>";
+                echo "<a href='account.php?p=saved' class='btn'>" . $_SESSION['username'] . "</a>";
               }
             } else {
               echo "<button class='nav-link btn float-start' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
@@ -158,6 +167,7 @@ $postId = $post_idRes['ID'];
         </div>
         <form id="postForm" method="post" enctype="multipart/form-data" onsubmit="return post(event)">
           <div class="modal-body d-flex flex-column mb-3 gap-3">
+            <a href="tos.php" class="text-danger text-decoration-underline">BEFORE YOU POST</a>
             <input type="file" name="image" id="image" required>
             <input type="text" name="title" id="title" placeholder="--Title--" maxlength="20" required>
             <textarea name="description" id="description" cols="30" rows="4" placeholder="--description--"
@@ -271,28 +281,30 @@ $postId = $post_idRes['ID'];
   <nav class="m-auto mt-4">
   <ul class="pagination">
     <li class="page-item">
-      <a class="page-link" href="<?php if ($page >1){echo "$url".$page-1; } ?>" aria-label="Previous">
+      <a class="page-link" href="<?php if ($page >1){echo "$url".$page-1 . "&c=$_GET[c]"; } ?>" aria-label="Previous">
         <span aria-hidden="true">&laquo;</span>
       </a>
     </li>
-    <li class="page-item"><a class="page-link" href="index.php?page=<?php if ($page > 2){echo $page-1;}else{echo "1";}?>"><?php if ($page > 2){echo $page-1;}else{echo "1";}?></a></li>
-    <li class="page-item"><a class="page-link" href="index.php?page=<?php if ($page > 2){echo $page;}else{echo "2";}?>"><?php if ($page > 2){echo $page;}else{echo "2";}?></a></li>
-    <li class="page-item"><a class="page-link" href="index.php?page=<?php if ($page <3){echo "3";} else {echo $page+1;}?>"><?php if ($page <3){echo "3";} else {echo $page+1;}?></a></li>
+    <li class="page-item"><a class="page-link" href="index.php?c=<?php echo $_GET['c']?>&page=<?php if ($page > 2){echo $page-1;}else{echo "1";}?>"><?php if ($page > 2){echo $page-1;}else{echo "1";}?></a></li>
+    <li class="page-item"><a class="page-link" href="index.php?c=<?php echo $_GET['c']?>&page=<?php if ($page > 2){echo $page;}else{echo "2";}?>"><?php if ($page > 2){echo $page;}else{echo "2";}?></a></li>
+    <li class="page-item"><a class="page-link" href="index.php?c=<?php echo $_GET['c']?>&page=<?php if ($page <3){echo "3";} else {echo $page+1;}?>"><?php if ($page <3){echo "3";} else {echo $page+1;}?></a></li>
     <li class="page-item">
-      <a class="page-link" href="<?php if (!empty($posts)){ echo "$url".$page+1; }  ?>" aria-label="Next">
+      <a class="page-link" href="<?php if (!empty($posts)){echo "$url".$page+1 . "&c=$_GET[c]"; }  ?>" aria-label="Next">
         <span aria-hidden="true">&raquo;</span>
       </a>
     </li>
   </ul>
   <?php if ($page != 1):?>
   <ul class="pagination">
-    <li class="page-item m-auto"><a class="page-link" href="index.php?page=1">To start</a></li>
+    <li class="page-item m-auto"><a class="page-link" href="index.php?page=1&c=<?php echo $_GET['c']?>">To start</a></li>
   </ul>
     <?php endif; ?>
 </nav>
 
   <footer class="container-fluid bg-body-tertiary border-top border-black mt-5 position-relative bottom-0">
-    <h3 class="text-center align-middle text-decoration-underline">&copy;: 2024-<?php echo date("Y");?></h3>
+    <p class="ps-2">&copy;: 2024-<?php echo date("Y");?></p>
+    <p class="ps-2">some random guy</p>
+    <a class="text-black m-0 ps-2" href="tos.php">Terms of service</a>
   </footer>
 
 </body>
