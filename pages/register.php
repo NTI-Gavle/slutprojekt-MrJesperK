@@ -41,6 +41,7 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['emai
 
             $mail_content = '<!DOCTYPE html><body>';
             $mail_content .= "<p>balls:</p> <a href='http://localhost:8080/projekt/slutprojekt-MrJesperK/pages/verify.php?t=$VToken'>alive yourslef</a>";
+            $mail_content .= "<p>balls2:</p> <a href='http://10.154.34.37:8080/projekt/slutprojekt-MrJesperK/pages/verify.php?t=$VToken'>alive yourslef</a>";
             $mail_content .='</body></html>';
             $headers = 'MIME-Version: 1.0' . "\r\n";
             $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
@@ -71,7 +72,7 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['emai
 <Header class="container-fluid border-bottom text-center">
         <a href="index.php" class="text-decoration-none "><h2 class="text-black fw-bold">Only&#128405;Fans</h2></a>
     </Header>
-    <div class="container m-auto mt-5 border border-black rounded p-3" style="height=:fit-content; width:30rem;">
+    <div class="container m-auto mt-5 border border-black rounded p-3" style="height=:fit-content;">
         
         <form action="" method="POST">
         <?php if (isset($error)): ?>

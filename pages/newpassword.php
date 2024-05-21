@@ -9,8 +9,6 @@ $secret = 'qeZkIMG!u4#]isfu;i!hYw9PD]b1i^Wv_to^)bf%z.wh]tVsm';
 $result = Token::validate($tokenStr, $secret);
 $exp = Token::validateExpiration($tokenStr);
 $thing = Token::getPayload($tokenStr);
-var_dump($result);
-var_dump($exp);
 $uid = $thing['uid'];
 
 if ($result && $exp){
@@ -47,7 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['newPass'])){
 </head>
 <body>
     <form method="post">
-        <input type="password" name="newPass" id="newPass">
+        <label for="newPass">Enter your new password: </label>
+        <input type="password" name="newPass" id="newPass" placeholder="password123">
         <input type="submit" class="btn btn-primary" value="Update"></input>
     </form>
 </body>

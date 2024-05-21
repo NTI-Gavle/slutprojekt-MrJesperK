@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])){
     if ($user_id){
         $mail_content = '<!DOCTYPE html><body>';
         $mail_content .= "<p>balls:</p> <a href='http://localhost:8080/projekt/slutprojekt-MrJesperK/pages/newpassword.php?t=$token'>Kill yourslef</a>";
+        $mail_content .= "<p>balls2:</p> <a href='http://10.154.34.37:8080/projekt/slutprojekt-MrJesperK/pages/newpassword.php?t=$token'>Kill yourslef</a>";
         $mail_content .='</body></html>';
         $headers = 'MIME-Version: 1.0' . "\r\n";
         $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
