@@ -138,9 +138,9 @@ $postId = $post_idRes['ID'];
             if (isset($_SESSION['username'])) {
               if ($_SESSION['admin'] === 'Y') {
                 echo "<a href='admin.php' class='btn btn-warning'>Admin</a>";
-                echo "<li class='nav-item'><a class='btn' href='account.php?user=" . $_SESSION['user_id'] . "&p=saved'>" . $_SESSION['username'] . "</a></li>";
+                echo "<li class='nav-item'><a class='btn' href='account.php?&p=saved&page=1'>" . $_SESSION['username'] . "</a></li>";
               } else {
-                echo "<a href='account.php?p=saved' class='btn'>" . $_SESSION['username'] . "</a>";
+                echo "<a href='account.php?p=saved&page=1' class='btn'>" . $_SESSION['username'] . "</a>";
               }
             } else {
               echo "<button class='nav-link btn float-start' id='modalInput2' data-bs-toggle='modal' data-bs-target='#LoginModal' onclick='modal2()'>Login</button>";
@@ -302,7 +302,7 @@ $postId = $post_idRes['ID'];
 </nav>
 
   <footer class="container-fluid bg-body-tertiary border-top border-black mt-5 position-relative bottom-0">
-    <p class="ps-2 pt-1">&copy;: 2024-<?php echo date("Y");?></p>
+    <p class="ps-2 pt-1">&copy; 2024-<?php echo date("Y");?></p>
     <p class="ps-2">some random guy</p>
     <a class="text-black m-0 ps-2 pb-1" href="tos.php">Terms of service</a>
   </footer>

@@ -5,6 +5,13 @@ require '../db_shenanigans/thing.php';
 if (!isset($_GET['p'])){
   header("Location: account.php?p=saved");
 }
+
+if (isset($_GET['c'])){
+  $category = $_GET['c'];
+  } else {
+    header("Location: account.php?c=all&page=1&p=saved");
+  }
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     if (isset($_POST['logout'])){
         session_destroy();
@@ -17,17 +24,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
         header('Location: index.php');
      }
 }
+
+if (isset($_GET['page'])){
+  if ($_GET['page'] <= 0 || !is_numeric($_GET['page'])){
+    header("Location: account.php?page=1");
+  }
+  $page = htmlspecialchars($_GET['page']);
+} else {
+  header('Location: account.php?page=1');
+}
+
+
+$offsetHelp = $page-1;
+
+$offset = 20 * $offsetHelp;
+
 $whatPosts = $_GET['p'];
 
 $user_id = $_SESSION['user_id'];
 if ($whatPosts == 'saved' || $whatPosts != 'liked'){
-$getSavesStmt = $dbconn->prepare("SELECT posts.* FROM saves INNER JOIN posts ON saves.post_id = posts.ID WHERE saves.user_id = :user_id ORDER BY ID DESC");
+$getSavesStmt = $dbconn->prepare("SELECT posts.* FROM saves INNER JOIN posts ON saves.post_id = posts.ID WHERE saves.user_id = :user_id ORDER BY ID DESC LIMIT 20 OFFSET :offset");
 $getSavesStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+$getSavesStmt->bindParam('offset', $offset, PDO::PARAM_INT);
 $getSavesStmt->execute();
 $whatPosts = $getSavesStmt->fetchAll(PDO::FETCH_ASSOC);
 } elseif($whatPosts == 'liked'){
-$getLikesStmt = $dbconn->prepare("SELECT posts.* FROM likes INNER JOIN posts ON likes.post_id = posts.ID WHERE likes.user_id = :user_id ORDER BY ID DESC");
+$getLikesStmt = $dbconn->prepare("SELECT posts.* FROM likes INNER JOIN posts ON likes.post_id = posts.ID WHERE likes.user_id = :user_id ORDER BY ID DESC LIMIT 20 OFFSET :offset");
 $getLikesStmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+$getLikesStmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 $getLikesStmt->execute();
 $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -46,7 +70,7 @@ $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
 <link rel="stylesheet" href="../other_things/style.css">
 <script src="../other_things/script.js"></script>
 </head>
-<body>
+<body class="m-0 p-0 d-flex flex-column" style="width:100%; height:100vh;">
 <Header class="container-fluid text-center mt-2" style="width:fit-content;">
     <a href="index.php?c=all&page=1" class="text-decoration-none ">
       <h2 class="text-black fw-bold">Only&#128405;Fans</h2>
@@ -65,23 +89,23 @@ $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
               Categories
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="index.php?c=all&page=1"><b>all Fans</b></a></li>
+              <li><a class="dropdown-item" href="account.php?c=all&page=1"><b>all Fans</b></a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=tower&page=1">Tower Fans</a></li>
+              <li><a class="dropdown-item" href="account.php?c=tower&page=1">Tower Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=table&page=1">Table Fans</a></li>
+              <li><a class="dropdown-item" href="account.php?c=table&page=1">Table Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=ceiling&page=1">Ceiling Fans</a></li>
+              <li><a class="dropdown-item" href="account.php?c=ceiling&page=1">Ceiling Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=handheld&page=1">Handheld Fans</a></li>
+              <li><a class="dropdown-item" href="account.php?c=handheld&page=1">Handheld Fans</a></li>
             </ul>
           </li>
           <li class="nav-item">
@@ -98,6 +122,13 @@ $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
             }
             ?>
           </li>
+          <li class="nav-item">
+            <form method="post">
+              <button class="btn text-black" type="submit" name="logout" id="logout">Logout</button>
+              </form>
+          </li>
+          <li class="nav-item">
+          <button class="btn text-danger" data-bs-target="#DeleteUserModal" data-bs-toggle="modal" onclick="modal5()" >Delete Account</button>          </li>
         </ul>
         <form class="d-flex phoneSearch" role="search" id="searchForm" onsubmit="return searching(event)" method="post">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search">
@@ -108,8 +139,7 @@ $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
   </nav>
 
-<form method='post' name='logoutForm'><input type='submit' class='btn btn-warning ms-3' name='logout' value='logout'></input></form>
-<button class="btn btn-danger" data-bs-target="#DeleteUserModal" data-bs-toggle="modal" onclick="modal5()" >Delete Account</button>
+
 
 <div class="modal fade" id="DeleteUserModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -197,6 +227,36 @@ $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
     
 </div>
 </div>
+
+<nav class="m-auto mt-4">
+  <ul class="pagination">
+    <li class="page-item">
+      <a class="page-link" href="<?php if ($page >1){echo "$url".$page-1 . "&c=$_GET[c]"; } ?>" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li class="page-item"><a class="page-link" href="account.php?c=<?php echo $_GET['c']?>&page=<?php if ($page > 2){echo $page-1;}else{echo "1";}?>"><?php if ($page > 2){echo $page-1;}else{echo "1";}?></a></li>
+    <li class="page-item"><a class="page-link" href="account.php?c=<?php echo $_GET['c']?>&page=<?php if ($page > 2){echo $page;}else{echo "2";}?>"><?php if ($page > 2){echo $page;}else{echo "2";}?></a></li>
+    <li class="page-item"><a class="page-link" href="account.php?c=<?php echo $_GET['c']?>&page=<?php if ($page <3){echo "3";} else {echo $page+1;}?>"><?php if ($page <3){echo "3";} else {echo $page+1;}?></a></li>
+    <li class="page-item">
+      <a class="page-link" href="<?php if (!empty($posts)){echo "$url".$page+1 . "&c=$_GET[c]"; }  ?>" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+  <?php if ($page != 1):?>
+  <ul class="pagination">
+    <li class="page-item m-auto"><a class="page-link" href="index.php?page=1&c=<?php echo $_GET['c']?>">To start</a></li>
+  </ul>
+    <?php endif; ?>
+</nav>
+
+
+<footer class="container-fluid bg-body-tertiary border-top border-black mt-5 position-relative bottom-0">
+    <p class="ps-2 pt-1">&copy; 2024-<?php echo date("Y");?></p>
+    <p class="ps-2">some random guy</p>
+    <a class="text-black m-0 ps-2 pb-1" href="tos.php">Terms of service</a>
+  </footer>
 
 </body>
 </html>

@@ -182,49 +182,6 @@ function reply(event, comment_id) {
   return false;
 }
 
-
-function likePost(e, post_id){
-  console.log("literally anything");
-  e.preventDefault();
-  const likeButton = document.getElementById("likeButton"+post_id);
-  const likeIcon = document.getElementById("like");
-  const form = document.getElementById("likeForm");
-
-  const request = {
-    id: post_id,
-  };
-
-  const xhr = new XMLHttpRequest();
-  const url = "../db_shenanigans/like.php";
-
-  xhr.open("POST", url);
-  xhr.setRequestHeader("Content-Type", "application/json");
-  
-  xhr.onreadystatechange = function(){
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      const response = xhr.response;
-      likeButton.innerHTML = response;
-      console.log(response);
-      const isLiked = response.includes("bi-heart-fill");
-      console.log("aaa_"+isLiked);
-      saveLikedState(post_id, isLiked);
-      updateLikeButtonAppearance(likeButton, isLiked);
-      
-    } else {
-      console.log(xhr.status, xhr.statusText, xhr.responseText);
-    }
-    enableSubmitButton(form);
-  } 
-
-  try {
-  xhr.send(JSON.stringify(request));
-  } catch (error){
-    console.log("error: ", error)
-  }
-
-  return false;
-}
-
 function updateLikeButtonAppearance(button, isLiked)
 {
   if (isLiked){

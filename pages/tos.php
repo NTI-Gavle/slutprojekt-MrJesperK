@@ -40,9 +40,9 @@
 <body>
     <div class="container">
         <h1>Terms of Service</h1>
-        <p><strong>Last Updated: [2024-05-20]</strong></p>
+        <p><strong>Last Updated: [2024-05-21]</strong></p>
 
-        <p>Welcome to Only Fans. By accessing or using the Website, you agree to be bound by these Terms of Service. Please read them carefully.</p>
+        <p>Welcome to Only Fans. By accessing, using or otherwise seeing the Website, you agree to be bound by these Terms of Service. Please read them carefully.</p>
 
         <h2>1. Acceptance of Terms</h2>
         <p>By registering for and/or using the Website in any manner, including but not limited to visiting or browsing the Website, you agree to be bound by these Terms and all other operating rules, policies, and procedures that may be published from time to time on the Website by Only Fans.</p>
@@ -87,6 +87,7 @@
             <li>Interfering with the proper working of the Website;</li>
             <li>Accessing any content on the Website through any technology or means other than those provided or authorized by the Website;</li>
             <li>Bypassing the measures we may use to prevent or restrict access to the Website, including without limitation features that prevent or restrict use or copying of any content or enforce limitations on use of the Website or the content therein.</li>
+            <li>complain about the website being bad</li>
         </ul>
 
         <h2>7. Privacy</h2>
