@@ -1,24 +1,85 @@
 <?php
  require '../db_shenanigans/dbconn.php';
 
- $user = $_GET['u'];
+ $user = htmlspecialchars($_GET['u']);
  if (!isset($_GET['posts'])){
-  header('Location: user.php?u='.$user.'&posts=liked');
+  header('Location: user.php?u='.$user.'&posts=liked&c=all&page=1');
 }
- $fetchUserID = $dbconn->prepare("SELECT ID FROM users WHERE username = :username");
- $fetchUserID->bindParam(':username', $user, PDO::PARAM_STR);
- $fetchUserID->execute();
- $user_id = $fetchUserID->fetch();
 
- $fetchUserLikesStmt = $dbconn->prepare("SELECT posts.* FROM likes INNER JOIN posts ON posts.ID = post_id WHERE likes.user_id = :user ORDER BY ID DESC");
- $fetchUserLikesStmt->bindParam(':user', $user_id['ID'], PDO::PARAM_INT);
- $fetchUserLikesStmt->execute();
- $userLikedPosts = $fetchUserLikesStmt->fetchAll(PDO::FETCH_ASSOC);
+$fetchUserID = $dbconn->prepare("SELECT ID FROM users WHERE username = :username");
+$fetchUserID->bindParam(':username', $user, PDO::PARAM_STR);
+$fetchUserID->execute();
+$user_id = $fetchUserID->fetch();
 
- $fetchUserPostsStmt = $dbconn->prepare("SELECT * FROM posts WHERE created_by = :user");
+$page = $_GET['page'];
+$category = $_GET['c'];
+$items_per_page = 20; 
+$offset = ($page - 1) * $items_per_page;
+
+if ($_GET['posts'] == "liked") {
+if ($category == "all") {
+    $getTotalPosts = $dbconn->prepare("SELECT COUNT(*) AS postAmount FROM likes INNER JOIN posts ON posts.ID = post_id WHERE likes.user_id = :user");
+    $getTotalPosts->bindParam(':user', $user_id['ID'], PDO::PARAM_INT);
+} else {
+    $getTotalPosts = $dbconn->prepare("SELECT COUNT(*) AS postAmount FROM likes INNER JOIN posts ON posts.ID = post_id WHERE likes.user_id = :user AND category = :category");
+    $getTotalPosts->bindParam(':user', $user_id['ID'], PDO::PARAM_INT);
+    $getTotalPosts->bindParam(':category', $category, PDO::PARAM_STR);
+}
+} elseif ($_GET['posts'] == "posted") {
+  if ($category == "all"){
+  $getTotalPosts = $dbconn->prepare("SELECT COUNT(*) as postAmount FROM posts WHERE created_by = :user");
+  $getTotalPosts->bindParam(':user', $user, PDO::PARAM_STR);
+  } else {
+    $getTotalPosts = $dbconn->prepare("SELECT COUNT(*) as postAmount FROM posts WHERE created_by = :user AND category = :category");
+    $getTotalPosts->bindParam(':user', $user, PDO::PARAM_STR);
+    $getTotalPosts->bindParam(':category', $category, PDO::PARAM_STR);
+  }
+} else {
+  header('Location: user.php?u='.$user.'&posts=liked&c=all&page=1');
+}
+$getTotalPosts->execute();
+$totalPosts = $getTotalPosts->fetch(PDO::FETCH_ASSOC)['postAmount'];
+
+$total_pages = ceil($totalPosts / $items_per_page);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
+  $search = '%' . $_POST['search'] . '%';
+  $searchStmt = $dbconn->prepare("SELECT * FROM posts WHERE title LIKE :search AND created_by = :user ORDER BY ID DESC LIMIT :limit OFFSET :offset");
+  $searchStmt->bindParam(':search', $search, PDO::PARAM_STR);
+  $searchStmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
+  $searchStmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+  $searchStmt->bindParam(':user', $user, PDO::PARAM_STR);
+  $searchStmt->execute();
+  $userPosts = $searchStmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+  if ($category == "" || $category == "all" && $_GET['posts'] == "liked"){
+    $stmt = $dbconn->prepare("SELECT posts.* FROM likes INNER JOIN posts ON posts.ID = post_id WHERE likes.user_id = :user ORDER BY ID DESC LIMIT :limit OFFSET :offset");
+    $stmt->bindParam(':user', $user_id['ID'], PDO::PARAM_INT);
+    $stmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+  } elseif ($category != "" || $category != "all" && $_GET['posts'] == "liked") {
+    $stmt = $dbconn->prepare("SELECT posts.* FROM likes INNER JOIN posts ON posts.ID = post_id WHERE likes.user_id = :user AND category = :category ORDER BY ID DESC LIMIT :limit OFFSET :offset");
+    $stmt->bindParam(':user', $user_id['ID'], PDO::PARAM_INT);
+    $stmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+    $stmt->bindParam(':category', $category, PDO::PARAM_STR);
+  }
+  $stmt->execute();
+  $userPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+ $fetchUserPostsStmt = $dbconn->prepare("SELECT * FROM posts WHERE created_by = :user ORDER BY id DESC LIMIT :limit OFFSET :offset");
  $fetchUserPostsStmt->bindParam(':user', $user, PDO::PARAM_STR);
+ $fetchUserPostsStmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
+ $fetchUserPostsStmt->bindParam(':offset', $offset, PDO::PARAM_INT);
  $fetchUserPostsStmt->execute();
  $userPostedPosts = $fetchUserPostsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+ function generatePaginationLink($page_number, $text, $user, $posts, $is_active = false) {
+  global $category;
+  $active_class = $is_active ? " active" : "";
+  return "<li class='page-item$active_class'><a class='page-link' href='user.php?posts=" . $posts ."&u=" . $user . "&c=" . urlencode($category) . "&page=$page_number'>$text</a></li>";
+}
 ?>
 
 <!DOCTYPE html>
@@ -105,21 +166,15 @@
   </button>
   <h3>posts</h3>
   <ul class="dropdown-menu text-center">   
-    <li><a class="dropdown-item" href="user.php?u=<?php echo $user?>&posts=liked">Liked</a></li>
+    <li><a class="dropdown-item" href="user.php?u=<?php echo $user?>&posts=liked&page=1&c=<?php echo $category?>">Liked</a></li>
     <li class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="user.php?u=<?php echo $user?>&posts=posted">Posted</a></li>
+    <li><a class="dropdown-item" href="user.php?u=<?php echo $user?>&posts=posted&page=1&c=<?php echo $category?>">Posted</a></li>
   </ul>
 </div>
 
-  <h3 class="mt-4 text-center">
-    <?php if (empty($userLikedPosts) || empty($userPostedPosts)): ?>
-        Nothing to see here
-    <?php endif; ?>
-  </h3>
-
   <div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
 <?php if ($_GET['posts'] == 'liked'):?>
-  <?php foreach($userLikedPosts as $post):?>
+  <?php foreach($userPosts as $post):?>
     <?php
       $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
       $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
@@ -157,14 +212,16 @@
             <?php echo $post['created_by'] ?>
           </li>
         </ul>
-
+        <!-- <div class="card-body">
+    <p class="card-title text-center"><?php echo $post['description']; ?></p>
+  </div> -->
       </a>
   <?php endforeach ?>
   <?php endif; ?>
   </div>
   <div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
 <?php if ($_GET['posts'] == 'posted'):?>
-  <?php foreach($userPostedPosts as $post):?>
+  <?php foreach($userPosts as $post):?>
     <?php
       $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
       $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
@@ -202,10 +259,67 @@
             <?php echo $post['created_by'] ?>
           </li>
         </ul>
-
+        <!-- <div class="card-body">
+    <p class="card-title text-center"><?php echo $post['description']; ?></p>
+  </div> -->
       </a>
   <?php endforeach ?>
   <?php endif; ?>
+  </div>
+
+
+
+  <div class="container mt-4">
+    <nav aria-label="Page navigation example">
+      <ul class="pagination justify-content-center">
+
+        <?php if ($page > 1): ?>
+          <?= generatePaginationLink($page - 1, "Previous", $user, $_GET['posts']) ?>
+        <?php endif; ?>
+
+        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+          <?= generatePaginationLink($i, $i, $user, $_GET['posts'], $i == $page) ?>
+        <?php endfor; ?>
+
+        <?php if ($page < $total_pages): ?>
+          <?= generatePaginationLink($page + 1, "Next", $user, $_GET['posts']) ?>
+        <?php endif; ?>
+
+      </ul>
+    </nav>
+  </div>
+
+
+
+
+  <div class="modal fade" id="LoginModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="<?php if (isset($_SESSION['username'])){ echo "true"; } else {echo "true";}?>">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="ModalLabel">Login</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="POST" id="login" onsubmit="return login(event)">
+        <p id="error" class="fw-bold text-danger text-center m-0 mt-3"></p>
+          <div class="modal-body d-flex flex-column mb-3 gap-3">
+            <input type="text" name="username" id="username" placeholder="--Username--">
+            <input type="password" name="password" id="password" placeholder="--Password--">
+            <div class="container d-flex flex-row">
+              <label for="showPass" id="passLabel" style="margin-bottom:1.17rem;">Show password: </label>             
+              <input id="showPass" class="mb-3 ms-2" type="checkbox" onclick="Shenanigans()">
+            </div>
+            <a href="register.php">No account?</a>
+            <a href="passreset.php">Forgot password?</a>
+
+          </div>
+          <div class="modal-footer">
+            <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" name="Login" id="thing">Login</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </body>
 </html>

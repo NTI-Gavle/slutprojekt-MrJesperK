@@ -17,7 +17,7 @@ function Shenanigans() {
 
 function searching(event) {
   event.preventDefault();
-  console.log("PENIS");
+  console.log("NOT PENIS");
   var data = new FormData(document.getElementById("searchForm"));
   console.log("Form data:", data);
 
@@ -32,12 +32,12 @@ function searching(event) {
     }
   };
 
-  var url = "index.php";
+  var url = window.location.href;
   xhr.open("POST", url);
   console.log("Sending request to:", url);
   xhr.send(data);
 
-  return false; // Prevent default form submission
+  return false;
 }
 
 function thing(event) {

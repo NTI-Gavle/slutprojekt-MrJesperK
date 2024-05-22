@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
       if (!isset($_SESSION['username'])){
           echo "<script>alert('you must be signed in to like and/or save posts')</script>";
-          die();
+          header("refresh: 0");
       }
 
       $checkSaves = $dbconn->prepare("SELECT * FROM saves WHERE post_id = :post_id AND user_id = :user");
@@ -68,6 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 
   $like = "";
 if (isset($_POST['like'])){
+
+  if (!isset($_SESSION['username'])){
+    echo "<script>alert('you must be signed in to like and/or save posts')</script>";
+    header("refresh: 0");
+}
+
   $checkLikes = $dbconn->prepare("SELECT * FROM likes WHERE post_id = :post_id AND user_id = :user");
 $checkLikes->bindParam(':post_id', $post_id, PDO::PARAM_INT);
 $checkLikes->bindParam(':user', $user, PDO::PARAM_INT);
@@ -404,5 +410,37 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 <?php endforeach; ?>
 </div>
+
+
+
+<div class="modal fade" id="LoginModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="<?php if (isset($_SESSION['username'])){ echo "true"; } else {echo "true";}?>">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="ModalLabel">Login</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="POST" id="login" onsubmit="return login(event)">
+        <p id="error" class="fw-bold text-danger text-center m-0 mt-3"></p>
+          <div class="modal-body d-flex flex-column mb-3 gap-3">
+            <input type="text" name="username" id="username" placeholder="--Username--">
+            <input type="password" name="password" id="password" placeholder="--Password--">
+            <div class="container d-flex flex-row">
+              <label for="showPass" id="passLabel" style="margin-bottom:1.17rem;">Show password: </label>             
+              <input id="showPass" class="mb-3 ms-2" type="checkbox" onclick="Shenanigans()">
+            </div>
+            <a href="register.php">No account?</a>
+            <a href="passreset.php">Forgot password?</a>
+
+          </div>
+          <div class="modal-footer">
+            <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" name="Login" id="thing">Login</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

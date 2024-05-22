@@ -24,6 +24,8 @@ $s3_client = new S3Client([
 $json_data = file_get_contents('php://input');
 $request = json_decode($json_data, true);
 
+$Categories = ['Tower', 'Handheld', 'Ceiling', 'Table'];
+
 $file_url = null;
 
 if (isset($_FILES["image"]) && $_FILES["image"]["error"] == UPLOAD_ERR_OK) {
@@ -50,11 +52,17 @@ if (isset($_FILES["image"]) && $_FILES["image"]["error"] == UPLOAD_ERR_OK) {
     // Output error message for file upload
     echo "File upload error: " . $_FILES["image"]["error"];
 }
-if (isset($_SESSION['last_submit']) && ((time() - $_SESSION['last_submit']) < 60 * 5)) {
+
+$checkLastInsert = $dbconn->prepare("SELECT created_at, LAST_INSERT_ID() FROM posts WHERE username = :username");
+$checkLastInsert->bindParam(':username', $_SESSION['username'], PDO::PARAM_STR);
+$checkLastInsert->execute();
+
+
+if (isset($_SESSION['last_submit']) && ((time() - $_SESSION['last_submit']) < 60 * 5) && $_SESSION['username'] != 'admin') {
     die();
 } else {
 // Insert data into the database
-if ($file_url !== null) {
+if ($file_url !== null && in_array($_POST['category'], $Categories)) {
     $title = htmlspecialchars($_POST['title']);
     $descr = htmlspecialchars($_POST['description']);
     $category = htmlspecialchars($_POST['category']);
@@ -72,6 +80,8 @@ if ($file_url !== null) {
     $stmt->execute();
     $_SESSION['last_submit'] = time();
     $success = true;
+} else {
+    $success = false;
 }
 }
 

@@ -2,9 +2,9 @@
 require '../db_shenanigans/dbconn.php';
 require '../vendor/autoload.php';
 use ReallySimpleJWT\Token;
-
+$success = "";
 if ($_SERVER['REQUEST_METHOD'] == "POST"){
-if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['email'])){
+if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['email']) && !str_contains($_POST['username'], "&")){
 
     $username = htmlspecialchars($_POST['username']);
     $password = htmlspecialchars($_POST['password']);
@@ -31,7 +31,7 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['emai
             $payload = [
                 'iat' => time(),
                 'mail' => $email,
-                'exp' => time() + 900,
+                'exp' => time() + 60*60,
                 'iss' => 'localhost'
             ];
 
@@ -48,7 +48,7 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['emai
             mail($email, "Verify account creation or something", $mail_content, $headers);
     
             $_POST = array();
-            echo "<script>alert('A verification mail has been sent, you have 5 minutes to verify your account')</script>";
+            $success = "A verification mail has been sent to the provided email address, you have an hour to verify your account";
 
             header('Location: index.php');
         }
@@ -78,6 +78,7 @@ if (isset($_POST['username']) && isset($_POST['password']) && isset($_POST['emai
         <?php if (isset($error)): ?>
         <p><?php echo $error; ?></p>
     <?php endif; ?>
+    <?php echo $success?>
         <div class="d-flex text-center flex-column gap-4">
             <input type="text" name="username" id="username" placeholder="Username">
             <input type="email" name="email" id="email" placeholder="example@gmail.com">

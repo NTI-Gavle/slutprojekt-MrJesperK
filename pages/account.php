@@ -5,7 +5,9 @@ require '../db_shenanigans/thing.php';
 if (!isset($_GET['p'])){
   header("Location: account.php?p=saved");
 }
-
+if (!isset($_SESSION['username'])){
+  header("Location: index.php");
+}
 if (isset($_GET['c'])){
   $category = $_GET['c'];
   } else {
