@@ -53,12 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
   $searchStmt->execute();
   $userPosts = $searchStmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
-  if ($category == "" || $category == "all" && $_GET['posts'] == "liked"){
+  if ($category == "" || $category == "all"){
     $stmt = $dbconn->prepare("SELECT posts.* FROM likes INNER JOIN posts ON posts.ID = post_id WHERE likes.user_id = :user ORDER BY ID DESC LIMIT :limit OFFSET :offset");
     $stmt->bindParam(':user', $user_id['ID'], PDO::PARAM_INT);
     $stmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
     $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-  } elseif ($category != "" || $category != "all" && $_GET['posts'] == "liked") {
+  } else {
     $stmt = $dbconn->prepare("SELECT posts.* FROM likes INNER JOIN posts ON posts.ID = post_id WHERE likes.user_id = :user AND category = :category ORDER BY ID DESC LIMIT :limit OFFSET :offset");
     $stmt->bindParam(':user', $user_id['ID'], PDO::PARAM_INT);
     $stmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
@@ -68,12 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
   $stmt->execute();
   $userLikedPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-  if ($category == "" || $category == "all" && $_GET['posts'] == "posted"){
+  if ($category == "" || $category == "all"){
     $stmt2 = $dbconn->prepare("SELECT * FROM posts WHERE created_by = :user ORDER BY ID DESC LIMIT :limit OFFSET :offset");
     $stmt2->bindParam(':user', $user, PDO::PARAM_INT);
     $stmt2->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
     $stmt2->bindParam(':offset', $offset, PDO::PARAM_INT);
-  } elseif ($category != "" || $category != "all" && $_GET['posts'] == "posted") {
+  } else {
     $stmt2 = $dbconn->prepare("SELECT * FROM posts WHERE created_by = :user AND category = :category ORDER BY ID DESC LIMIT :limit OFFSET :offset");
     $stmt2->bindParam(':user', $user, PDO::PARAM_INT);
     $stmt2->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
@@ -84,12 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
   $userPostedPosts = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 }
 
- $fetchUserPostsStmt = $dbconn->prepare("SELECT * FROM posts WHERE created_by = :user ORDER BY id DESC LIMIT :limit OFFSET :offset");
- $fetchUserPostsStmt->bindParam(':user', $user, PDO::PARAM_STR);
- $fetchUserPostsStmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
- $fetchUserPostsStmt->bindParam(':offset', $offset, PDO::PARAM_INT);
- $fetchUserPostsStmt->execute();
- $userPostedPosts = $fetchUserPostsStmt->fetchAll(PDO::FETCH_ASSOC);
+
 
  function generatePaginationLink($page_number, $text, $user, $posts, $is_active = false) {
   global $category;
@@ -263,9 +258,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
         ?>
 
         <ul class="list-group list-group-flush">
-          <h5 class="list-group-item">
-            <?php echo $post['title']; ?>
-          </h5>
+        <h5 class="list-group-item">
+        <?php echo $post['title']; ?>
+        <span class="text-secondary float-end me-2 fs-6 fw-medium"><?php echo $post['category']?> fan</span>
+      </h5>
           <li class="list-group-item">Likes:
             <?php echo $likeCount['like_count'] ?>
           </li>
@@ -306,30 +302,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
 
 
 
-  <div class="modal fade" id="LoginModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="<?php if (isset($_SESSION['username'])){ echo "true"; } else {echo "true";}?>">
+  <div class="modal fade" id="LoginModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="ModalLabel">Login</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form method="POST" id="login" onsubmit="return login(event)">
-        <p id="error" class="fw-bold text-danger text-center m-0 mt-3"></p>
+        <p class="text-center mt-2" id="error"></p>
+        <form id="loginForm" method="post" onsubmit="return login(event)">
           <div class="modal-body d-flex flex-column mb-3 gap-3">
-            <input type="text" name="username" id="username" placeholder="--Username--">
-            <input type="password" name="password" id="password" placeholder="--Password--">
-            <div class="container d-flex flex-row">
-              <label for="showPass" id="passLabel" style="margin-bottom:1.17rem;">Show password: </label>             
-              <input id="showPass" class="mb-3 ms-2" type="checkbox" onclick="Shenanigans()">
-            </div>
-            <a href="register.php">No account?</a>
+            <input type="text" name="username" id="username" placeholder="username" required>
+            <input type="password" name="password" id="password" placeholder="password" required>
             <a href="passreset.php">Forgot password?</a>
-
           </div>
           <div class="modal-footer">
-            <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary" name="Login" id="thing">Login</button>
+            <button type="submit" class="btn btn-primary">Login</button>
+            <a href="register.php" class="btn btn-primary">Register</a>
           </div>
         </form>
       </div>

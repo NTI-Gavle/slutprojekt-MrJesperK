@@ -413,30 +413,24 @@ $Comments = $CommentStmt->fetchAll(PDO::FETCH_ASSOC);
 
 
 
-<div class="modal fade" id="LoginModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="<?php if (isset($_SESSION['username'])){ echo "true"; } else {echo "true";}?>">
+<div class="modal fade" id="LoginModal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="ModalLabel">Login</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form method="POST" id="login" onsubmit="return login(event)">
-        <p id="error" class="fw-bold text-danger text-center m-0 mt-3"></p>
+        <p class="text-center mt-2" id="error"></p>
+        <form id="loginForm" method="post" onsubmit="return login(event)">
           <div class="modal-body d-flex flex-column mb-3 gap-3">
-            <input type="text" name="username" id="username" placeholder="--Username--">
-            <input type="password" name="password" id="password" placeholder="--Password--">
-            <div class="container d-flex flex-row">
-              <label for="showPass" id="passLabel" style="margin-bottom:1.17rem;">Show password: </label>             
-              <input id="showPass" class="mb-3 ms-2" type="checkbox" onclick="Shenanigans()">
-            </div>
-            <a href="register.php">No account?</a>
+            <input type="text" name="username" id="username" placeholder="username" required>
+            <input type="password" name="password" id="password" placeholder="password" required>
             <a href="passreset.php">Forgot password?</a>
-
           </div>
           <div class="modal-footer">
-            <img src="../image/sus.png" alt="sus" style="width:3rem; height:3rem;">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary" name="Login" id="thing">Login</button>
+            <button type="submit" class="btn btn-primary">Login</button>
+            <a href="register.php" class="btn btn-primary">Register</a>
           </div>
         </form>
       </div>
