@@ -40,7 +40,7 @@ $total_pages = ceil($totalPosts / $items_per_page);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
     $search = '%' . $_POST['search'] . '%';
-    $searchStmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts WHERE title LIKE :search ORDER BY ID DESC LIMIT :limit OFFSET :offset");
+    $searchStmt = $dbconn->prepare("SELECT * FROM posts WHERE title LIKE :search ORDER BY ID DESC LIMIT :limit OFFSET :offset");
     $searchStmt->bindParam(':search', $search, PDO::PARAM_STR);
     $searchStmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
     $searchStmt->bindParam(':offset', $offset, PDO::PARAM_INT);
@@ -48,9 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])) {
     $posts = $searchStmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
     if ($category == "" || $category == "all") {
-        $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts ORDER BY ID DESC LIMIT :limit OFFSET :offset");
+        $stmt = $dbconn->prepare("SELECT * FROM posts ORDER BY ID DESC LIMIT :limit OFFSET :offset");
     } else {
-        $stmt = $dbconn->prepare("SELECT ID, title, image, description, created_by FROM posts WHERE category = :category ORDER BY ID DESC LIMIT :limit OFFSET :offset");
+        $stmt = $dbconn->prepare("SELECT * FROM posts WHERE category = :category ORDER BY ID DESC LIMIT :limit OFFSET :offset");
         $stmt->bindParam(':category', $category, PDO::PARAM_STR);
     }
     $stmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
@@ -65,7 +65,6 @@ function generatePaginationLink($page_number, $text, $is_active = false) {
     return "<li class='page-item$active_class'><a class='page-link' href='index.php?c=" . urlencode($category) . "&page=$page_number'>$text</a></li>";
 }
 
-echo $totalPosts;
 ?>
 
 <!DOCTYPE html>
@@ -224,6 +223,7 @@ echo $totalPosts;
     <ul class="list-group list-group-flush">
       <h5 class="list-group-item">
         <?php echo $post['title']; ?>
+        <span class="text-secondary float-end me-2 fs-6 fw-medium"><?php echo $post['category']?> fan</span>
       </h5>
       <li class="list-group-item">Likes:
         <?php echo $likeCount['like_count'] ?>

@@ -13,6 +13,7 @@ $user_id = $fetchUserID->fetch();
 
 $page = $_GET['page'];
 $category = $_GET['c'];
+
 $items_per_page = 20; 
 $offset = ($page - 1) * $items_per_page;
 
@@ -63,9 +64,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
     $stmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
     $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
     $stmt->bindParam(':category', $category, PDO::PARAM_STR);
-  }
+  } 
   $stmt->execute();
-  $userPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $userLikedPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+  if ($category == "" || $category == "all" && $_GET['posts'] == "posted"){
+    $stmt2 = $dbconn->prepare("SELECT * FROM posts WHERE created_by = :user ORDER BY ID DESC LIMIT :limit OFFSET :offset");
+    $stmt2->bindParam(':user', $user, PDO::PARAM_INT);
+    $stmt2->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt2->bindParam(':offset', $offset, PDO::PARAM_INT);
+  } elseif ($category != "" || $category != "all" && $_GET['posts'] == "posted") {
+    $stmt2 = $dbconn->prepare("SELECT * FROM posts WHERE created_by = :user AND category = :category ORDER BY ID DESC LIMIT :limit OFFSET :offset");
+    $stmt2->bindParam(':user', $user, PDO::PARAM_INT);
+    $stmt2->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt2->bindParam(':offset', $offset, PDO::PARAM_INT);
+    $stmt2->bindParam(':category', $category, PDO::PARAM_STR);
+  } 
+  $stmt2->execute();
+  $userPostedPosts = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 }
 
  $fetchUserPostsStmt = $dbconn->prepare("SELECT * FROM posts WHERE created_by = :user ORDER BY id DESC LIMIT :limit OFFSET :offset");
@@ -116,23 +132,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
               Categories
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="index.php?c=all&page=1"><b>all Fans</b></a></li>
+              <li><a class="dropdown-item" href="user.php?c=all&page=1&posts=<?php echo $_GET['posts']?>&u=<?php echo $user?>"><b>all Fans</b></a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=tower&page=1">Tower Fans</a></li>
+              <li><a class="dropdown-item" href="user.php?c=tower&page=1&posts=<?php echo $_GET['posts']?>&u=<?php echo $user?>">Tower Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=table&page=1">Table Fans</a></li>
+              <li><a class="dropdown-item" href="user.php?c=table&page=1&posts=<?php echo $_GET['posts']?>&u=<?php echo $user?>">Table Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=ceiling&page=1">Ceiling Fans</a></li>
+              <li><a class="dropdown-item" href="user.php?c=ceiling&page=1&posts=<?php echo $_GET['posts']?>&u=<?php echo $user?>">Ceiling Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="index.php?c=handheld&page=1">Handheld Fans</a></li>
+              <li><a class="dropdown-item" href="user.php?c=handheld&page=1&posts=<?php echo $_GET['posts']?>&u=<?php echo $user?>">Handheld Fans</a></li>
             </ul>
           </li>
           <li class="nav-item">
@@ -174,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
 
   <div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
 <?php if ($_GET['posts'] == 'liked'):?>
-  <?php foreach($userPosts as $post):?>
+  <?php foreach($userLikedPosts as $post):?>
     <?php
       $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
       $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
@@ -199,9 +215,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
         ?>
 
         <ul class="list-group list-group-flush">
-          <h5 class="list-group-item">
-            <?php echo $post['title']; ?>
-          </h5>
+        <h5 class="list-group-item">
+        <?php echo $post['title']; ?>
+        <span class="text-secondary float-end me-2 fs-6 fw-medium"><?php echo $post['category']?> fan</span>
+      </h5>
           <li class="list-group-item">Likes:
             <?php echo $likeCount['like_count'] ?>
           </li>
@@ -221,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
   </div>
   <div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
 <?php if ($_GET['posts'] == 'posted'):?>
-  <?php foreach($userPosts as $post):?>
+  <?php foreach($userPostedPosts as $post):?>
     <?php
       $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
       $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
@@ -259,9 +276,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
             <?php echo $post['created_by'] ?>
           </li>
         </ul>
-        <!-- <div class="card-body">
-    <p class="card-title text-center"><?php echo $post['description']; ?></p>
-  </div> -->
       </a>
   <?php endforeach ?>
   <?php endif; ?>
@@ -321,5 +335,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
       </div>
     </div>
   </div>
+<br>
+  <footer class="container-fluid bg-light bg-gradient border-top border-black mt-5 position-relative bottom-0">
+    <p class="ps-2 pt-1">&copy; 2024-<?php echo date("Y");?></p>
+    <p class="ps-2">some random guy</p>
+    <a class="text-black m-0 ps-2 pb-1" href="tos.php">Terms of service</a>
+  </footer>
+
 </body>
 </html>

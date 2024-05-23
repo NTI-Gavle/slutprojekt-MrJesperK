@@ -11,7 +11,7 @@ if (!isset($_SESSION['username'])){
 if (isset($_GET['c'])){
   $category = $_GET['c'];
   } else {
-    header("Location: account.php?c=all&page=1&p=saved");
+    header("Location: account.php?c=all&page=1&p=liked");
   }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
@@ -36,10 +36,21 @@ if (isset($_GET['page'])){
   header('Location: account.php?page=1');
 }
 
+$items_per_page = 20; 
+$offset = ($page - 1) * $items_per_page;
 
-$offsetHelp = $page-1;
+if ($category == "all") {
+    $getTotalPosts = $dbconn->prepare("SELECT COUNT(*) AS postAmount FROM posts WHERE created_by = :user");
+    $getTotalPosts->bindParam(':user', $_SESSION['username']);
+} else {
+    $getTotalPosts = $dbconn->prepare("SELECT COUNT(*) AS postAmount FROM posts WHERE category = :category AND created_by = :user");
+    $getTotalPosts->bindParam(':user', $_SESSION['username']);
+    $getTotalPosts->bindParam(':category', $category, PDO::PARAM_STR);
+}
+$getTotalPosts->execute();
+$totalPosts = $getTotalPosts->fetch(PDO::FETCH_ASSOC)['postAmount'];
 
-$offset = 20 * $offsetHelp;
+$total_pages = ceil($totalPosts / $items_per_page);
 
 $whatPosts = $_GET['p'];
 
@@ -58,7 +69,11 @@ $getLikesStmt->execute();
 $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-
+function generatePaginationLink($page_number, $text,  $p, $is_active = false) {
+  global $category;
+  $active_class = $is_active ? " active" : "";
+  return "<li class='page-item$active_class'><a class='page-link' href='account.php?&p=$p&c=" . urlencode($category) . "&page=$page_number'>$text</a></li>";
+}
 
 ?>
 <!DOCTYPE html>
@@ -91,23 +106,23 @@ $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
               Categories
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="account.php?c=all&page=1"><b>all Fans</b></a></li>
+              <li><a class="dropdown-item" href="account.php?c=all&page=1&p=<?php echo $_GET['p']?>"><b>all Fans</b></a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="account.php?c=tower&page=1">Tower Fans</a></li>
+              <li><a class="dropdown-item" href="account.php?c=tower&page=1&p=<?php echo $_GET['p']?>">Tower Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="account.php?c=table&page=1">Table Fans</a></li>
+              <li><a class="dropdown-item" href="account.php?c=table&page=1&p=<?php echo $_GET['p']?>">Table Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="account.php?c=ceiling&page=1">Ceiling Fans</a></li>
+              <li><a class="dropdown-item" href="account.php?c=ceiling&page=1&p=<?php echo $_GET['p']?>">Ceiling Fans</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
-              <li><a class="dropdown-item" href="account.php?c=handheld&page=1">Handheld Fans</a></li>
+              <li><a class="dropdown-item" href="account.php?c=handheld&page=1&p=<?php echo $_GET['p']?>">Handheld Fans</a></li>
             </ul>
           </li>
           <li class="nav-item">
@@ -172,86 +187,107 @@ $whatPosts = $getLikesStmt->fetchAll(PDO::FETCH_ASSOC);
     <?php echo $_GET['p']?>
   </button>
   <ul class="dropdown-menu text-center">   
-    <li><a class="dropdown-item" href="account.php?p=<?php echo "saved"?>"">Saved</a></li>
+    <li><a class="dropdown-item" href="account.php?p=<?php echo "saved&page=".$_GET['page']."&c=".$category?>">Saved</a></li>
     <li class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="account.php?p=<?php echo "liked"?>">Liked</a></li>
+    <li><a class="dropdown-item" href="account.php?p=<?php echo "liked&page=".$_GET['page']."&c=".$category?>">Liked</a></li>
   </ul>
 </div>
-<h2 class="mt-4">
+</div>
+<p class="mt-4 mx-auto position-relative">
     <?php if (empty($whatPosts)): ?>
-        Nothing to see here
-    <?php endif; ?>
-</h2>
-<div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
-
-    <?php foreach($whatPosts as $post): ?>
-    <?php
-    $likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
-    $likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
-    $likeCountStmt->execute();
-    $likeCount = $likeCountStmt->fetch(PDO::FETCH_ASSOC);
-
-    $saveCountStmt = $dbconn->prepare("SELECT COUNT(*) AS save_count FROM saves WHERE post_id = :postId");
-    $saveCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
-    $saveCountStmt->execute();
-    $saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
-    ?>
-
-    <a href="post.php?id=<?php echo $post['ID']; ?>"
-        class="card shadow-sm col border mb-5 p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0"
+      <div
+        class="m-auto card shadow-sm col border mb-5 p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0"
         style="width: 18rem;">
         <?php
-        if (isset($post['image'])) {
-          $image = $post['image'];
-          echo "<img class='card-img-top' style='height:14rem;' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
-        } else {
+
           echo "<img src='../image/nedladdning.png' class='card-img-top' />";
-        }
+        
         ?>
 
         <ul class="list-group list-group-flush">
           <h5 class="list-group-item">
-            <?php echo $post['title']; ?>
+            <?php echo "Nothing here!" ?>
           </h5>
           <li class="list-group-item">Likes:
-            <?php echo $likeCount['like_count'] ?>
+            <?php echo "0" ?>
           </li>
           <li class="list-group-item">Saves:
-            <?php echo $saveCount['save_count'] ?>
+            <?php echo "0" ?>
           </li>
           <li class="list-group-item text-body-secondary">Created by:
-            <?php echo $post['created_by'] ?>
+            <?php echo "Admins" ?>
           </li>
         </ul>
-      </a>
-  
-    <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+</p>
+<div class="row row-cols-6 column-gap-5 row-gap-2 m-auto justify-content-center position-relative" style="top:3rem;">
+
+<?php foreach ($whatPosts as $post): ?>
+
+<?php
+$likeCountStmt = $dbconn->prepare("SELECT COUNT(*) AS like_count FROM likes WHERE post_id = :postId");
+$likeCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
+$likeCountStmt->execute();
+$likeCount = $likeCountStmt->fetch(PDO::FETCH_ASSOC);
+
+$saveCountStmt = $dbconn->prepare("SELECT COUNT(*) AS save_count FROM saves WHERE post_id = :postId");
+$saveCountStmt->bindParam(':postId', $post['ID'], PDO::PARAM_INT);
+$saveCountStmt->execute();
+$saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
+?>
+<a href="post.php?id=<?php echo $post['ID']; ?>"
+  class="card shadow-sm col border mb-5 p-0 text-decoration-none position-relative text-black hoverEffect overflow-hidden z-0"
+  style="width: 18rem;">
+  <?php
+  if (isset($post['image'])) {
+    $image = $post['image'];
+    echo "<img class='card-img-top' style='height:14rem;' src='https://pub-0130d38cef9c4c1aa3926e0a120c3413.r2.dev/$image' />";
+  } else {
+    echo "<img src='../image/nedladdning.png' class='card-img-top' />";
+  }
+  ?>
+
+  <ul class="list-group list-group-flush">
+  <h5 class="list-group-item">
+        <?php echo $post['title']; ?>
+        <span class="text-secondary float-end me-2 fs-6 fw-medium"><?php echo $post['category']?> fan</span>
+      </h5>
+    <li class="list-group-item">Likes:
+      <?php echo $likeCount['like_count'] ?>
+    </li>
+    <li class="list-group-item">Saves:
+      <?php echo $saveCount['save_count'] ?>
+    </li>
+    <li class="list-group-item text-body-secondary">Created by:
+      <?php echo $post['created_by'] ?>
+    </li>
+  </ul>
+
+</a>
+<?php endforeach; ?>
     
 </div>
-</div>
 
-<nav class="m-auto mt-4">
-  <ul class="pagination">
-    <li class="page-item">
-      <a class="page-link" href="<?php if ($page >1){echo "$url".$page-1 . "&c=$_GET[c]"; } ?>" aria-label="Previous">
-        <span aria-hidden="true">&laquo;</span>
-      </a>
-    </li>
-    <li class="page-item"><a class="page-link" href="account.php?c=<?php echo $_GET['c']?>&page=<?php if ($page > 2){echo $page-1;}else{echo "1";}?>"><?php if ($page > 2){echo $page-1;}else{echo "1";}?></a></li>
-    <li class="page-item"><a class="page-link" href="account.php?c=<?php echo $_GET['c']?>&page=<?php if ($page > 2){echo $page;}else{echo "2";}?>"><?php if ($page > 2){echo $page;}else{echo "2";}?></a></li>
-    <li class="page-item"><a class="page-link" href="account.php?c=<?php echo $_GET['c']?>&page=<?php if ($page <3){echo "3";} else {echo $page+1;}?>"><?php if ($page <3){echo "3";} else {echo $page+1;}?></a></li>
-    <li class="page-item">
-      <a class="page-link" href="<?php if (!empty($posts)){echo "$url".$page+1 . "&c=$_GET[c]"; }  ?>" aria-label="Next">
-        <span aria-hidden="true">&raquo;</span>
-      </a>
-    </li>
-  </ul>
-  <?php if ($page != 1):?>
-  <ul class="pagination">
-    <li class="page-item m-auto"><a class="page-link" href="index.php?page=1&c=<?php echo $_GET['c']?>">To start</a></li>
-  </ul>
-    <?php endif; ?>
-</nav>
+<div class="container mt-4">
+    <nav aria-label="Page navigation example">
+      <ul class="pagination justify-content-center">
+
+        <?php if ($page > 1): ?>
+          <?= generatePaginationLink($page - 1, "Previous", $_GET['p']) ?>
+        <?php endif; ?>
+
+        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+          <?= generatePaginationLink($i, $i, $_GET['p'], $i == $page) ?>
+        <?php endfor; ?>
+
+        <?php if ($page < $total_pages): ?>
+          <?= generatePaginationLink($page + 1, "Next", $_GET['p']) ?>
+        <?php endif; ?>
+
+      </ul>
+    </nav>
+  </div>
 
 
 <footer class="container-fluid bg-body-tertiary border-top border-black mt-5 position-relative bottom-0">
