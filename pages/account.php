@@ -251,7 +251,7 @@ $saveCount = $saveCountStmt->fetch(PDO::FETCH_ASSOC);
   <ul class="list-group list-group-flush">
   <h5 class="list-group-item">
         <?php echo $post['title']; ?>
-        <span class="text-secondary float-end me-2 fs-6 fw-medium"><?php echo $post['category']?> fan</span>
+        <span class="text-secondary float-end mt-1 me-2 fs-6 fw-medium"><?php echo $post['category']?> fan</span>
       </h5>
     <li class="list-group-item">Likes:
       <?php echo $likeCount['like_count'] ?>

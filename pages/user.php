@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
   $searchStmt->bindParam(':offset', $offset, PDO::PARAM_INT);
   $searchStmt->bindParam(':user', $user, PDO::PARAM_STR);
   $searchStmt->execute();
-  $userPosts = $searchStmt->fetchAll(PDO::FETCH_ASSOC);
+  $userLikedPosts = $searchStmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
   if ($category == "" || $category == "all"){
     $stmt = $dbconn->prepare("SELECT posts.* FROM likes INNER JOIN posts ON posts.ID = post_id WHERE likes.user_id = :user ORDER BY ID DESC LIMIT :limit OFFSET :offset");
@@ -67,7 +67,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
   } 
   $stmt->execute();
   $userLikedPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
+    $search = '%' . $_POST['search'] . '%';
+    $searchStmt = $dbconn->prepare("SELECT * FROM posts WHERE title LIKE :search AND created_by = :user ORDER BY ID DESC LIMIT :limit OFFSET :offset");
+    $searchStmt->bindParam(':search', $search, PDO::PARAM_STR);
+    $searchStmt->bindParam(':limit', $items_per_page, PDO::PARAM_INT);
+    $searchStmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+    $searchStmt->bindParam(':user', $user, PDO::PARAM_STR);
+    $searchStmt->execute();
+    $userPostedPosts = $searchStmt->fetchAll(PDO::FETCH_ASSOC);
+  }else {
   if ($category == "" || $category == "all"){
     $stmt2 = $dbconn->prepare("SELECT * FROM posts WHERE created_by = :user ORDER BY ID DESC LIMIT :limit OFFSET :offset");
     $stmt2->bindParam(':user', $user, PDO::PARAM_INT);
@@ -260,7 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search'])){
         <ul class="list-group list-group-flush">
         <h5 class="list-group-item">
         <?php echo $post['title']; ?>
-        <span class="text-secondary float-end me-2 fs-6 fw-medium"><?php echo $post['category']?> fan</span>
+        <span class="text-secondary float-end mt-1 me-2 fs-6 fw-medium"><?php echo $post['category']?> fan</span>
       </h5>
           <li class="list-group-item">Likes:
             <?php echo $likeCount['like_count'] ?>

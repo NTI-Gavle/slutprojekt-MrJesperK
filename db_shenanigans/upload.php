@@ -53,12 +53,8 @@ if (isset($_FILES["image"]) && $_FILES["image"]["error"] == UPLOAD_ERR_OK) {
     echo "File upload error: " . $_FILES["image"]["error"];
 }
 
-$checkLastInsert = $dbconn->prepare("SELECT created_at, LAST_INSERT_ID() FROM posts WHERE username = :username");
-$checkLastInsert->bindParam(':username', $_SESSION['username'], PDO::PARAM_STR);
-$checkLastInsert->execute();
-
-
-if (isset($_SESSION['last_submit']) && ((time() - $_SESSION['last_submit']) < 60 * 5) && $_SESSION['username'] != 'admin') {
+//upon successful post, remove the ability to post for 30 seconds
+if (isset($_SESSION['last_submit']) && ((time() - $_SESSION['last_submit']) < 30) && $_SESSION['username'] != 'admin') {
     die();
 } else {
 // Insert data into the database
