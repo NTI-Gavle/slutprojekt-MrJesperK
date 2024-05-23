@@ -1,0 +1,6 @@
+{
+    "require": {
+        "aws/aws-sdk-php": "^3.301",
+        "rbdwllr/reallysimplejwt": "^5.0"
+    }
+}

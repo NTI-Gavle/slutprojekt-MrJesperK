@@ -1,0 +1,22 @@
+.hoverEffect:hover{
+   transform: scale(1.01);
+    transition-duration: 100ms;
+    transition-timing-function: ease-in-out;
+}
+
+@media only screen and (max-width:900px){
+    .phoneReplyBox{
+        width:75% !important;
+    }
+
+    .phoneReplyText{
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+
+    .replyPhoneName{
+        position:relative;
+        text-align: center;
+        margin: auto;
+    }
+}
